@@ -1,0 +1,263 @@
+{
+  "address": "6pW64gN1s2uqjHkn1unFeEjAwJkPGHoppGvS715wyP2J",
+  "metadata": {
+    "name": "txoracle",
+    "version": "1.5.2",
+    "spec": "0.1.0",
+    "description": "TxODDS TxLINE Data system"
+  },
+  "instructions": [
+    {
+      "name": "request_devnet_faucet",
+      "discriminator": [49, 178, 104, 8, 23, 120, 186, 21],
+      "accounts": [
+        { "name": "user", "writable": true, "signer": true },
+        { "name": "faucet_tracker", "writable": true },
+        { "name": "usdt_mint", "writable": true },
+        { "name": "user_usdt_ata", "writable": true },
+        { "name": "usdt_treasury_pda" },
+        { "name": "token_program" },
+        { "name": "associated_token_program" },
+        { "name": "system_program" }
+      ],
+      "args": []
+    },
+    {
+      "name": "subscribe",
+      "discriminator": [254, 28, 191, 138, 156, 179, 183, 53],
+      "accounts": [
+        { "name": "user", "writable": true, "signer": true },
+        { "name": "pricing_matrix" },
+        { "name": "token_mint" },
+        { "name": "user_token_account", "writable": true },
+        { "name": "token_treasury_vault", "writable": true },
+        { "name": "token_treasury_pda", "docs": ["Hold the PDA that owns the vault"] },
+        { "name": "token_program" },
+        { "name": "system_program" },
+        { "name": "associated_token_program" }
+      ],
+      "args": [
+        { "name": "service_level_id", "type": "u16" },
+        { "name": "weeks", "type": "u8" }
+      ]
+    },
+    {
+      "name": "validate_fixture",
+      "discriminator": [231, 129, 218, 86, 223, 114, 21, 126],
+      "accounts": [
+        { "name": "ten_daily_fixtures_roots", "docs": ["Constrain the address by seeds to ensure the correct PDA is loaded"] }
+      ],
+      "args": [
+        { "name": "snapshot", "type": { "defined": { "name": "Fixture" } } },
+        { "name": "summary", "type": { "defined": { "name": "FixtureBatchSummary" } } },
+        { "name": "sub_tree_proof", "type": { "vec": { "defined": { "name": "ProofNode" } } } },
+        { "name": "main_tree_proof", "type": { "vec": { "defined": { "name": "ProofNode" } } } }
+      ],
+      "returns": "bool"
+    },
+    {
+      "name": "validate_odds",
+      "discriminator": [192, 19, 91, 138, 104, 100, 212, 86],
+      "accounts": [
+        { "name": "daily_odds_merkle_roots" }
+      ],
+      "args": [
+        { "name": "ts", "type": "i64" },
+        { "name": "odds_snapshot", "type": { "defined": { "name": "Odds" } } },
+        { "name": "summary", "type": { "defined": { "name": "OddsBatchSummary" } } },
+        { "name": "sub_tree_proof", "type": { "vec": { "defined": { "name": "ProofNode" } } } },
+        { "name": "main_tree_proof", "type": { "vec": { "defined": { "name": "ProofNode" } } } }
+      ],
+      "returns": "bool"
+    },
+    {
+      "name": "validate_stat",
+      "discriminator": [107, 197, 232, 90, 191, 136, 105, 185],
+      "accounts": [
+        { "name": "daily_scores_merkle_roots" }
+      ],
+      "args": [
+        { "name": "ts", "type": "i64" },
+        { "name": "fixture_summary", "type": { "defined": { "name": "ScoresBatchSummary" } } },
+        { "name": "fixture_proof", "type": { "vec": { "defined": { "name": "ProofNode" } } } },
+        { "name": "main_tree_proof", "type": { "vec": { "defined": { "name": "ProofNode" } } } },
+        { "name": "predicate", "type": { "defined": { "name": "TraderPredicate" } } },
+        { "name": "stat_a", "type": { "defined": { "name": "StatTerm" } } },
+        { "name": "stat_b", "type": { "option": { "defined": { "name": "StatTerm" } } } },
+        { "name": "op", "type": { "option": { "defined": { "name": "BinaryExpression" } } } }
+      ],
+      "returns": "bool"
+    }
+  ],
+  "accounts": [
+    { "name": "FaucetTracker", "discriminator": [247, 221, 212, 62, 42, 233, 215, 190] },
+    { "name": "PricingMatrix", "discriminator": [173, 13, 64, 22, 248, 77, 110, 106] }
+  ],
+  "errors": [
+    { "code": 6003, "name": "InvalidSubTreeProof", "msg": "Invalid sub-tree proof. The snapshot does not belong to the summary." },
+    { "code": 6004, "name": "InvalidMainTreeProof", "msg": "Invalid main tree proof. The summary does not belong to the on-chain root." },
+    { "code": 6005, "name": "TimeSlotMismatch", "msg": "Time slot mismatch between snapshot and on-chain root account." },
+    { "code": 6007, "name": "RootNotAvailable", "msg": "Merkle root for this time slot has not been posted by the oracle." },
+    { "code": 6009, "name": "InvalidPda", "msg": "The provided daily root account does not match the expected PDA." },
+    { "code": 6010, "name": "TimestampMismatch", "msg": "The timestamp provided for seed generation does not match the timestamp in the snapshot payload." },
+    { "code": 6013, "name": "InvalidTimeSlot", "msg": "Invalid time slot, must be aligned on a 5-min boundary." },
+    { "code": 6021, "name": "PredicateFailed", "msg": "Predicate failed." },
+    { "code": 6022, "name": "InvalidFixtureSubTreeProof", "msg": "Invalid sub-tree proof for fixture" },
+    { "code": 6023, "name": "InvalidStatProof", "msg": "Invalid stats proof for event" },
+    { "code": 6024, "name": "InvalidStatCombination", "msg": "invalid stat combination" },
+    { "code": 6025, "name": "MissingSecondStat", "msg": "Missing second stat" },
+    { "code": 6053, "name": "StatKeyMismatch", "msg": "Stat key mismatch" },
+    { "code": 6058, "name": "RateLimitExceeded", "msg": "Rate limit exceeded" }
+  ],
+  "types": [
+    {
+      "name": "BinaryExpression",
+      "type": { "kind": "enum", "variants": [ { "name": "Add" }, { "name": "Subtract" } ] }
+    },
+    {
+      "name": "Comparison",
+      "type": { "kind": "enum", "variants": [ { "name": "GreaterThan" }, { "name": "LessThan" }, { "name": "EqualTo" } ] }
+    },
+    {
+      "name": "FaucetTracker",
+      "type": { "kind": "struct", "fields": [ { "name": "last_request_time", "type": "i64" } ] }
+    },
+    {
+      "name": "Fixture",
+      "type": { "kind": "struct", "fields": [
+        { "name": "ts", "type": "i64" },
+        { "name": "start_time", "type": "i64" },
+        { "name": "competition", "type": "string" },
+        { "name": "competition_id", "type": "i32" },
+        { "name": "fixture_group_id", "type": "i32" },
+        { "name": "participant1_id", "type": "i32" },
+        { "name": "participant1", "type": "string" },
+        { "name": "participant2_id", "type": "i32" },
+        { "name": "participant2", "type": "string" },
+        { "name": "fixture_id", "type": "i64" },
+        { "name": "participant1_is_home", "type": "bool" }
+      ] }
+    },
+    {
+      "name": "FixtureBatchSummary",
+      "type": { "kind": "struct", "fields": [
+        { "name": "fixture_id", "type": "i64" },
+        { "name": "competition_id", "type": "i32" },
+        { "name": "competition", "type": "string" },
+        { "name": "update_stats", "type": { "defined": { "name": "FixtureUpdateStats" } } },
+        { "name": "update_sub_tree_root", "type": { "array": ["u8", 32] } }
+      ] }
+    },
+    {
+      "name": "FixtureUpdateStats",
+      "type": { "kind": "struct", "fields": [
+        { "name": "update_count", "type": "u32" },
+        { "name": "min_timestamp", "type": "i64" },
+        { "name": "max_timestamp", "type": "i64" }
+      ] }
+    },
+    {
+      "name": "Odds",
+      "type": { "kind": "struct", "fields": [
+        { "name": "fixture_id", "type": "i64" },
+        { "name": "message_id", "type": "string" },
+        { "name": "ts", "type": "i64" },
+        { "name": "bookmaker", "type": "string" },
+        { "name": "bookmaker_id", "type": "i32" },
+        { "name": "super_odds_type", "type": "string" },
+        { "name": "game_state", "type": { "option": "string" } },
+        { "name": "in_running", "type": "bool" },
+        { "name": "market_parameters", "type": { "option": "string" } },
+        { "name": "market_period", "type": { "option": "string" } },
+        { "name": "price_names", "type": { "vec": "string" } },
+        { "name": "prices", "type": { "vec": "i32" } }
+      ] }
+    },
+    {
+      "name": "OddsBatchSummary",
+      "type": { "kind": "struct", "fields": [
+        { "name": "fixture_id", "type": "i64" },
+        { "name": "update_stats", "type": { "defined": { "name": "OddsUpdateStats" } } },
+        { "name": "odds_sub_tree_root", "type": { "array": ["u8", 32] } }
+      ] }
+    },
+    {
+      "name": "OddsUpdateStats",
+      "type": { "kind": "struct", "fields": [
+        { "name": "update_count", "type": "u32" },
+        { "name": "min_timestamp", "type": "i64" },
+        { "name": "max_timestamp", "type": "i64" }
+      ] }
+    },
+    {
+      "name": "PricingMatrix",
+      "type": { "kind": "struct", "fields": [
+        { "name": "admin", "type": "pubkey" },
+        { "name": "rows", "type": { "vec": { "defined": { "name": "ServiceRow" } } } }
+      ] }
+    },
+    {
+      "name": "ProofNode",
+      "type": { "kind": "struct", "fields": [
+        { "name": "hash", "type": { "array": ["u8", 32] } },
+        { "name": "is_right_sibling", "type": "bool" }
+      ] }
+    },
+    {
+      "name": "ScoreStat",
+      "docs": ["The on-chain representation of a single, provable key-value statistic.", "This is the leaf of the inner-most Merkle tree."],
+      "type": { "kind": "struct", "fields": [
+        { "name": "key", "type": "u32" },
+        { "name": "value", "type": "i32" },
+        { "name": "period", "type": "i32" }
+      ] }
+    },
+    {
+      "name": "ScoresBatchSummary",
+      "docs": ["The summary for a single fixture's scores events within a 5-minute batch.", "This contains the root of the sub-tree of all events for that fixture."],
+      "type": { "kind": "struct", "fields": [
+        { "name": "fixture_id", "type": "i64" },
+        { "name": "update_stats", "type": { "defined": { "name": "ScoresUpdateStats" } } },
+        { "name": "events_sub_tree_root", "type": { "array": ["u8", 32] } }
+      ] }
+    },
+    {
+      "name": "ScoresUpdateStats",
+      "type": { "kind": "struct", "fields": [
+        { "name": "update_count", "type": "i32" },
+        { "name": "min_timestamp", "type": "i64" },
+        { "name": "max_timestamp", "type": "i64" }
+      ] }
+    },
+    {
+      "name": "ServiceRow",
+      "type": { "kind": "struct", "fields": [
+        { "name": "row_id", "type": "u16" },
+        { "name": "price_per_week_token", "type": "u64" },
+        { "name": "sampling_interval_sec", "type": "u32" },
+        { "name": "league_bundle_id", "type": "i16" },
+        { "name": "market_bundle_id", "type": "i16" }
+      ] }
+    },
+    {
+      "name": "StatTerm",
+      "type": { "kind": "struct", "fields": [
+        { "name": "stat_to_prove", "type": { "defined": { "name": "ScoreStat" } } },
+        { "name": "event_stat_root", "type": { "array": ["u8", 32] } },
+        { "name": "stat_proof", "type": { "vec": { "defined": { "name": "ProofNode" } } } }
+      ] }
+    },
+    {
+      "name": "TraderPredicate",
+      "type": { "kind": "struct", "fields": [
+        { "name": "threshold", "type": "i32" },
+        { "name": "comparison", "type": { "defined": { "name": "Comparison" } } }
+      ] }
+    }
+  ],
+  "constants": [
+    { "name": "TXLINE_MINT", "type": "pubkey", "value": "4Zao8ocPhmMgq7PdsYWyxvqySMGx7xb9cMftPMkEokRG" },
+    { "name": "USDT_MINT", "type": "pubkey", "value": "ELWTKspHKCnCfCiCiqYw1EDH77k8VCP74dK9qytG2Ujh" },
+    { "name": "TOKEN_DECIMALS", "type": "u32", "value": "6" }
+  ]
+}

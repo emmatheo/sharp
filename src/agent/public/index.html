@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SHARP — live match predictions, proven on-chain</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0B0D10;--card:#15181D;--card2:#1B1F26;--line:#242933;--grn:#30D158;--red:#FF453A;
+--gray:#8E8E93;--txt:#F4F5F7;--mut:#8A919E;--font:"Inter",-apple-system,sans-serif;--mono:"IBM Plex Mono",monospace}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--txt);font-family:var(--font);font-size:14px;min-height:100vh;position:relative;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:-30%;z-index:-2;pointer-events:none;
+  background:radial-gradient(circle at 20% 15%,rgba(48,209,88,.10),transparent 42%),
+             radial-gradient(circle at 85% 85%,rgba(48,150,220,.10),transparent 45%),
+             radial-gradient(circle at 60% 40%,rgba(120,80,255,.06),transparent 50%);
+  animation:drift 22s ease-in-out infinite alternate}
+@keyframes drift{0%{transform:translate(0,0) scale(1)}50%{transform:translate(3%,-2%) scale(1.06)}100%{transform:translate(-2%,3%) scale(1.02)}}
+a{color:var(--grn);text-decoration:none}
+.wrap{max-width:640px;margin:0 auto;padding:0 14px 70px;position:relative;z-index:1}
+header{position:sticky;top:0;z-index:9;background:rgba(11,13,16,.94);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.bar{max-width:640px;margin:0 auto;display:flex;align-items:center;gap:10px;padding:14px}
+.logo{font-weight:800;font-size:19px;letter-spacing:.5px}.logo b{color:var(--grn)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--grn);position:relative}
+.dot::after{content:"";position:absolute;inset:-5px;border-radius:50%;background:var(--grn);opacity:.5;animation:halo 1.8s ease-out infinite}
+.dot.dead{background:var(--red)}.dot.dead::after{background:var(--red);animation:none;opacity:0}
+@keyframes halo{0%{transform:scale(.6);opacity:.55}100%{transform:scale(2.4);opacity:0}}
+@keyframes pulse{50%{opacity:.35}}
+/* count-up + shimmer for the accuracy number */
+.v.grn{background:linear-gradient(90deg,var(--grn),#7CF0A8,var(--grn));background-size:200% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:shine 3.5s linear infinite}
+@keyframes shine{to{background-position:-200% 0}}
+.chipstat{transition:transform .2s,border-color .3s}
+.chipstat.bump{transform:translateY(-3px);border-color:#3A4150}
+/* ambient "listening" equalizer shown when the feed is quiet */
+.listening{display:flex;align-items:flex-end;gap:4px;height:34px;justify-content:center;margin:10px 0}
+.listening span{width:4px;background:linear-gradient(var(--grn),#2E8B57);border-radius:2px;animation:eq 1.1s ease-in-out infinite}
+.listening span:nth-child(2){animation-delay:.15s}.listening span:nth-child(3){animation-delay:.3s}
+.listening span:nth-child(4){animation-delay:.45s}.listening span:nth-child(5){animation-delay:.6s}
+@keyframes eq{0%,100%{height:8px;opacity:.5}50%{height:30px;opacity:1}}
+.card{animation:rise .45s ease-out}
+@keyframes rise{0%{transform:translateY(10px);opacity:0}100%{transform:none;opacity:1}}
+.fill{filter:drop-shadow(0 0 4px currentColor)}
+@media(prefers-reduced-motion:reduce){.dot::after,.card,.card.new,.listening span,.v.grn,body::before{animation:none}}
+.status{color:var(--mut);font-size:11px;font-family:var(--mono);flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.rp{font-size:10px;font-family:var(--mono);border:1px solid #FFB454;color:#FFB454;border-radius:4px;padding:2px 7px;display:none}
+#alert{display:none;background:rgba(255,69,58,.12);border:1px solid var(--red);color:var(--red);padding:9px 13px;border-radius:10px;margin:14px 0;font-size:12px}
+.tabs{display:flex;gap:8px;padding:14px 0 4px}
+.tab{flex:1;background:var(--card);border:1px solid var(--line);color:var(--mut);border-radius:12px;padding:10px;font-weight:600;font-size:13px;cursor:pointer;font-family:var(--font)}
+.tab.on{background:var(--card2);color:var(--txt);border-color:#3A4150}
+.statrow{display:flex;gap:8px;margin:10px 0}
+.chipstat{flex:1;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.chipstat .k{color:var(--mut);font-size:10px;letter-spacing:.8px;text-transform:uppercase}
+.chipstat .v{font-weight:800;font-size:20px;margin-top:2px}.v.grn{color:var(--grn)}
+
+/* match card — per reference image */
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0}
+.card.new{animation:pop .4s ease-out}
+@keyframes pop{0%{transform:scale(.98);opacity:.4}100%{transform:none;opacity:1}}
+.mhead{display:flex;align-items:center;justify-content:space-between}
+.team{flex:1;text-align:center;font-weight:700;font-size:15px;line-height:1.25}
+.mid{min-width:110px;text-align:center}
+.score{font-weight:800;font-size:30px;letter-spacing:2px}
+.ko{color:var(--mut);font-size:11px;margin-top:2px}
+.live{display:inline-block;background:var(--red);color:#fff;font-size:10px;font-weight:700;letter-spacing:1px;border-radius:5px;padding:2px 8px;margin-bottom:4px}
+.ft{display:inline-block;background:var(--card2);color:var(--mut);font-size:10px;font-weight:700;letter-spacing:1px;border-radius:5px;padding:2px 8px;margin-bottom:4px;border:1px solid var(--line)}
+.whowins{margin-top:16px;border-top:1px solid var(--line);padding-top:14px}
+.whowins .t{font-size:11px;font-weight:700;letter-spacing:1.2px;color:var(--mut);text-transform:uppercase}
+.rings{display:flex;justify-content:space-around;margin-top:12px}
+.ring{text-align:center}
+.ring svg{transform:rotate(-90deg)}
+.ring .lab{font-size:12px;color:var(--mut);margin-top:6px}
+.ring .lab b{color:var(--txt)}
+.ring .glyph{font-weight:800;font-size:13px}
+.sigline{margin-top:12px;font-family:var(--mono);font-size:11px;color:var(--mut)}
+.sigline b{color:var(--grn)}
+.consensus{margin-top:10px;font-size:12px;color:var(--mut)}
+.consensus b{color:var(--txt)}
+
+/* tape (tab 2) */
+.sig{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--grn);border-radius:12px;padding:12px 14px;margin:10px 0}
+.sig.goal{border-left-color:#FFB454}
+.sig .h{font-size:13px}.sig .h b{color:var(--grn)}.sig.goal .h b{color:#FFB454}
+.sig .m{color:var(--mut);font-size:11px;font-family:var(--mono);margin-top:4px}
+.sig .r{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.badge{font-size:10px;font-family:var(--mono);letter-spacing:.8px;padding:3px 8px;border-radius:5px;border:1px solid var(--line);color:var(--mut)}
+.badge.win{border-color:var(--grn);color:var(--grn)}.badge.loss{border-color:var(--red);color:var(--red)}
+.badge.chain{border-color:#2E4A3A;color:#7FBF9B}
+.empty{color:var(--mut);text-align:center;padding:56px 18px;line-height:1.8;font-size:13px}
+/* ---- receipt printer ---- */
+.printer{background:linear-gradient(#2A2F38,#1B1F26);border:1px solid #3A4150;border-radius:14px;height:26px;margin:14px 6px 0;position:relative;box-shadow:0 6px 18px rgba(0,0,0,.5)}
+.printer::after{content:"";position:absolute;left:10%;right:10%;top:10px;height:6px;background:#0B0D10;border-radius:3px}
+.rwrap{overflow:hidden;padding:0 22px}
+.receipt{background:#FAFAF5;color:#17181A;font-family:var(--mono);font-size:12px;border-radius:0 0 2px 2px;
+  margin:0 auto 18px;max-width:380px;padding:18px 18px 10px;position:relative;line-height:1.7;
+  box-shadow:0 10px 24px rgba(0,0,0,.45)}
+.receipt.print{animation:printout 1.1s cubic-bezier(.2,.7,.3,1)}
+@keyframes printout{0%{transform:translateY(-96%);}100%{transform:none}}
+.receipt::after{content:"";position:absolute;left:0;right:0;bottom:-8px;height:8px;
+  background:radial-gradient(circle at 8px -2px,transparent 7px,#FAFAF5 7px);background-size:16px 8px}
+.receipt .rt{text-align:center;font-weight:700;letter-spacing:2px;font-size:14px}
+.receipt .rs{text-align:center;color:#6A6D72;font-size:10px}
+.receipt .dash{border-top:1px dashed #B9BBB6;margin:8px 0}
+.receipt .row{display:flex;justify-content:space-between;gap:10px}
+.receipt .row .r{text-align:right}
+.receipt .big{font-weight:700;font-size:13px}
+.receipt a{color:#17181A;text-decoration:underline}
+.stamp{position:absolute;top:44px;right:14px;transform:rotate(12deg);border:3px solid;border-radius:6px;
+  padding:3px 10px;font-weight:800;letter-spacing:2px;font-size:13px;opacity:.85}
+.stamp.win{color:#1E9E4F;border-color:#1E9E4F}.stamp.loss{color:#C6342B;border-color:#C6342B}
+.stamp.pend{color:#8A8D93;border-color:#8A8D93;font-size:10px}
+.bar{display:flex;align-items:flex-end;height:34px;gap:0;justify-content:center;margin:8px 0 2px}
+.bar i{display:block;background:#17181A;height:100%}
+.upchip{display:inline-block;background:var(--card2);border:1px solid #3A4150;color:var(--mut);font-size:10px;font-weight:700;letter-spacing:1px;border-radius:5px;padding:2px 8px;margin-bottom:4px}
+@media(prefers-reduced-motion:reduce){.receipt.print{animation:none}}
+</style>
+</head>
+<body>
+<header><div class="bar">
+  <span class="logo">SHARP<b>.</b></span><span class="dot" id="dot"></span>
+  <span class="status" id="status">connecting…</span><span class="rp" id="rp">REPLAY</span>
+</div></header>
+
+<div class="wrap">
+  <div id="alert"></div>
+  <div class="tabs">
+    <button class="tab on" data-t="matches">Matches</button>
+    <button class="tab" data-t="receipts">Receipts</button>
+  </div>
+  <div class="statrow">
+    <div class="chipstat"><div class="k">Signals</div><div class="v" id="sTotal">0</div></div>
+    <div class="chipstat"><div class="k">On-chain</div><div class="v" id="sChain">0</div></div>
+    <div class="chipstat"><div class="k">Verified accuracy</div><div class="v grn" id="sAcc">—</div></div>
+  </div>
+  <div id="view"></div>
+</div>
+
+<script>
+const $=q=>document.querySelector(q);
+let matches=[], signals=[], tab="matches", network="devnet";
+const TERMINAL=new Set([5,10,13]);
+
+async function boot(){
+  try{
+    const h=await (await fetch("/health")).json(); network=h.network??"devnet"; stats(h);
+    if((h.oddsFeed||"").includes("REPLAY"))$("#rp").style.display="inline-block";
+    matches=await (await fetch("/matches")).json();
+    signals=await (await fetch("/signals")).json();
+    render();
+  }catch{$("#status").textContent="agent offline — npm start";$("#dot").classList.add("dead");}
+  const es=new EventSource("/events");
+  es.onerror=()=>$("#dot").classList.add("dead");
+  es.onopen=()=>$("#dot").classList.remove("dead");
+  es.addEventListener("status",e=>$("#status").textContent=JSON.parse(e.data).status);
+  es.addEventListener("alert",e=>{const a=$("#alert");a.style.display="block";a.textContent="⚠ "+JSON.parse(e.data).alert});
+  es.addEventListener("match",e=>{const m=JSON.parse(e.data);const i=matches.findIndex(x=>x.fixtureId===m.fixtureId);i>=0?matches[i]=m:matches.unshift(m);if(tab==="matches")render(m.fixtureId)});
+  es.addEventListener("signal",e=>{signals.unshift(JSON.parse(e.data));refreshStats();if(tab==="receipts")render(true)});
+  es.addEventListener("graded",e=>{stats(JSON.parse(e.data).stats);hydrateTape()});
+  setInterval(refreshStats,20000);
+}
+async function refreshStats(){try{stats(await (await fetch("/health")).json())}catch{}}
+async function hydrateTape(){try{signals=await (await fetch("/signals")).json();if(tab==="receipts")render()}catch{}}
+function countUp(el,to){const from=parseInt(el.textContent)||0;if(from===to){el.textContent=to;return;}
+  el.closest(".chipstat")?.classList.add("bump");setTimeout(()=>el.closest(".chipstat")?.classList.remove("bump"),250);
+  const steps=Math.min(20,Math.abs(to-from)),inc=(to-from)/steps;let i=0;
+  const t=setInterval(()=>{i++;el.textContent=Math.round(from+inc*i);if(i>=steps){el.textContent=to;clearInterval(t);}},22);}
+function stats(h){if(h.totalSignals!=null)countUp($("#sTotal"),h.totalSignals);
+if(h.onChain!=null)countUp($("#sChain"),h.onChain);
+$("#sAcc").textContent=h.accuracy!=null?h.accuracy+"%":"—";
+if(h.oddsFeed)$("#status").textContent=h.oddsFeed;}
+
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{tab=b.dataset.t;
+document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x===b));render();});
+
+function render(newFx){
+  $("#view").innerHTML = tab==="matches"?renderMatches(newFx):renderReceipts();
+}
+
+function ring(p,color,glyph){
+  const r=22,c=2*Math.PI*r,off=c*(1-Math.max(0,Math.min(1,p)));
+  return `<svg width="56" height="56"><circle cx="28" cy="28" r="${r}" fill="none" stroke="#242933" stroke-width="5"/>
+  <circle cx="28" cy="28" r="${r}" fill="none" stroke="${color}" stroke-width="5" stroke-linecap="round"
+   stroke-dasharray="${c}" stroke-dashoffset="${off}" style="transition:stroke-dashoffset .8s ease"/>
+  <text x="28" y="33" text-anchor="middle" transform="rotate(90 28 28)" fill="${color}" class="glyph" font-size="13" font-weight="800">${glyph}</text></svg>`;
+}
+
+function renderMatches(newFx){
+  if(!matches.length) return `<div class="empty">
+    <div class="listening"><span></span><span></span><span></span><span></span><span></span></div>
+    <b style="color:var(--txt)">Listening to TxLINE, live.</b><br>
+    Connected and watching the odds feed. Match cards appear the instant a fixture goes live —
+    with real-time W/D/L probabilities and sharp-move alerts.</div>`;
+  return matches.map(m=>{
+    const live=m.phase!=null&&!TERMINAL.has(m.phase)&&(m.h!=null);
+    const done=m.phase!=null&&TERMINAL.has(m.phase);
+    const n1=m.name1??"Home", n2=m.name2??"Away";
+    const title=(m.name1||m.name2)?"":`Fixture #${m.fixtureId}`;
+    // map probs to W/D/L by priceName when possible, else positional [home,draw,away]
+    let W=null,D=null,L=null;
+    if(m.probs){
+      const pn=(m.priceNames||[]).map(x=>String(x).toUpperCase());
+      const get=k=>{const i=pn.indexOf(k);return i>=0?m.probs[i]:null};
+      W=get("1")??m.probs[0]??null; D=get("X")??(m.probs.length>2?m.probs[1]:null); L=get("2")??m.probs[m.probs.length-1]??null;
+    }
+    const lastSig=signals.find(s=>s.fixtureId===m.fixtureId);
+    const cons=W!=null&&L!=null?(W>=(D??0)&&W>=L?n1:(L>=(D??0)?n2:"Draw")):null;
+    return `<div class="card ${m.fixtureId===newFx?"new":""}">
+      <div class="mhead">
+        <div class="team">${esc(n1)}</div>
+        <div class="mid">
+          ${live?`<span class="live">● LIVE</span>`:done?`<span class="ft">FULL TIME</span>`:m.upcoming?`<span class="upchip">UPCOMING</span>`:""}
+          <div class="score">${m.h??"–"} : ${m.a??"–"}</div>
+          <div class="ko">${m.kickoff?new Date(m.kickoff*1000).toLocaleString(undefined,{weekday:"short",hour:"2-digit",minute:"2-digit",day:"numeric",month:"short"}):(title||(live?"in play":done?"final":"pre-match"))}</div>
+        </div>
+        <div class="team">${esc(n2)}</div>
+      </div>
+      ${m.upcoming&&!m.probs?`<div class="whowins"><div class="t">Who will win?</div><div class="consensus">Rings fill live from TxLINE odds at kickoff — the agent is already listening.</div></div>`:m.probs?`<div class="whowins"><div class="t">Who will win? · market-implied</div>
+        <div class="rings">
+          <div class="ring">${ring(W??0,"var(--grn)","W")}<div class="lab">Wins <b>${W!=null?Math.round(W*100)+"%":"—"}</b></div></div>
+          ${D!=null?`<div class="ring">${ring(D,"var(--gray)","D")}<div class="lab">Draw <b>${Math.round(D*100)}%</b></div></div>`:""}
+          <div class="ring">${ring(L??0,"var(--red)","L")}<div class="lab">Loses <b>${L!=null?Math.round(L*100)+"%":"—"}</b></div></div>
+        </div>
+        ${cons?`<div class="consensus">Agent read: market consensus favors <b>${esc(cons)}</b> right now — live from TxLINE odds, recalculated every update.</div>`:""}
+      </div>`:`<div class="whowins"><div class="t">Who will win?</div><div class="consensus">Waiting for the first odds frame on this fixture…</div></div>`}
+      ${lastSig?`<div class="sigline">last sharp signal: money moved <b>${lastSig.direction} ${esc(lastSig.outcome)}</b> (${(lastSig.pFrom*100).toFixed(1)}%→${(lastSig.pTo*100).toFixed(1)}%, z=${lastSig.zScore})</div>`:""}
+    </div>`;
+  }).join("");
+}
+
+function barcode(seed){
+  let h=0;for(const c of String(seed))h=(h*31+c.charCodeAt(0))>>>0;
+  let out="";for(let i=0;i<46;i++){h=(h*1103515245+12345)>>>0;const w=1+(h%3);const gap=1+((h>>3)%2);
+  out+=`<i style="width:${w}px;margin-right:${gap}px"></i>`;}
+  return `<div class="bar">${out}</div>`;
+}
+function explainerReceipt(){
+  return `<div class="receipt">
+    <div class="rt">SHARP AGENT</div><div class="rs">AUTONOMOUS ODDS SURVEILLANCE · SOLANA DEVNET</div>
+    <div class="dash"></div>
+    <div class="row"><span>1x WATCH TxLINE ODDS</span><span class="r">24/7</span></div>
+    <div class="row"><span>1x DETECT ABNORMAL MOVE</span><span class="r">z ≥ 3</span></div>
+    <div class="row"><span>1x PRINT PREDICTION RECEIPT</span><span class="r">INSTANT</span></div>
+    <div class="row"><span>1x STAMP ON SOLANA</span><span class="r">PERMANENT</span></div>
+    <div class="row"><span>1x SELF-GRADE AT FULL TIME</span><span class="r">✓ / ✗</span></div>
+    <div class="dash"></div>
+    <div class="row big"><span>TOTAL</span><span class="r">UNFAKEABLE TRACK RECORD</span></div>
+    <div class="rs" style="margin-top:6px">every receipt below is a real on-chain transaction.<br>misses cannot be deleted. hits cannot be invented.</div>
+    ${barcode("SHARP")}
+    <div class="rs">THANK YOU — VERIFY, DON'T TRUST</div>
+  </div>`;
+}
+function renderReceipts(isNew){
+  const items=signals.map((s,i)=>{
+    const ex=s.explorer??(s.memoTx?`https://explorer.solana.com/tx/${s.memoTx}?cluster=${network}`:null);
+    return `<div class="receipt ${isNew&&i===0?"print":""}">
+      ${s.grade?`<div class="stamp ${s.grade.won?"win":"loss"}">${s.grade.won?"CORRECT":"WRONG"}</div>`:`<div class="stamp pend">AWAITING RESULT</div>`}
+      <div class="rt">PREDICTION RECEIPT</div>
+      <div class="rs">${new Date(s.at).toLocaleString()} · fixture ${s.fixtureId}</div>
+      <div class="dash"></div>
+      <div class="row"><span>SIGNAL</span><span class="r">money ${esc(s.direction)} ${esc(s.outcome)}</span></div>
+      <div class="row"><span>PROBABILITY</span><span class="r">${(s.pFrom*100).toFixed(1)}% → ${(s.pTo*100).toFixed(1)}%</span></div>
+      <div class="row"><span>MOVE</span><span class="r">${s.deltaPts>0?"+":""}${s.deltaPts} pts (z=${s.zScore})</span></div>
+      <div class="row"><span>CONTEXT</span><span class="r">${s.inRunning?"in-play":"pre-match"} · ${s.cause==="goal-reprice"?"goal reprice":"sharp move"}</span></div>
+      ${s.grade?`<div class="row"><span>FINAL SCORE</span><span class="r">${esc(s.grade.finalScore??"")}</span></div>`:""}
+      <div class="dash"></div>
+      <div class="row big"><span>ON-CHAIN</span><span class="r">${ex?`<a target="_blank" rel="noopener" href="${ex}">${(s.memoTx||"").slice(0,10)}…</a>`:"stamping…"}</span></div>
+      ${barcode(s.memoTx||s.id)}
+      <div class="rs">SHARP · PROOF OVER PROMISES</div>
+    </div>`;
+  }).join("");
+  return `<div class="printer"></div><div class="rwrap">${explainerReceipt()}${items||`<div class="empty" style="color:var(--mut)">No prediction receipts yet — the printer fires the moment the agent catches an abnormal move in a live match.</div>`}</div>`;
+}
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+boot();
+</script>
+</body>
+</html>
