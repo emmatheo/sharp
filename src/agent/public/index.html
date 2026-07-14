@@ -319,12 +319,15 @@ function ring(p,color,glyph){
 }
 
 function renderMatches(newFx){
-  if(!matches.length) return `<div class="empty">
+  // The explainer receipt is the fastest "I understand this product" artifact —
+  // print it at the top of the default tab, not one click away.
+  const intro=`<div class="printer"></div><div class="rwrap">${explainerReceipt("intro")}</div>`;
+  if(!matches.length) return intro+`<div class="empty">
     <div class="listening"><span></span><span></span><span></span><span></span><span></span></div>
     <b style="color:var(--txt)">Listening to TxLINE, live.</b><br>
     Connected and watching the odds feed. Match cards appear the instant a fixture goes live —
     with real-time W/D/L probabilities and sharp-move alerts.</div>`;
-  return matches.map(m=>{
+  return intro+matches.map(m=>{
     const live=m.phase!=null&&!TERMINAL.has(m.phase)&&(m.h!=null);
     const done=m.phase!=null&&TERMINAL.has(m.phase);
     const n1=m.name1??"Home", n2=m.name2??"Away";
@@ -367,7 +370,10 @@ function barcode(seed){
   out+=`<i style="width:${w}px;margin-right:${gap}px"></i>`;}
   return `<div class="bar">${out}</div>`;
 }
-function explainerReceipt(sim){
+function explainerReceipt(mode){ // mode: 'intro' | 'sim' | 'real'
+  const foot=mode==="sim"?"the receipt(s) below are SIMULATED examples.<br>in production, every receipt is a real on-chain transaction."
+    :mode==="intro"?"each signal is stamped on Solana the moment it fires —<br>proof on-chain, <b style='color:#17181A'>before</b> the result is known."
+    :"every receipt below is a real on-chain transaction.<br>misses cannot be deleted. hits cannot be invented.";
   return `<div class="receipt">
     <div class="rt">SHARP AGENT</div><div class="rs">AUTONOMOUS ODDS SURVEILLANCE · SOLANA DEVNET</div>
     <div class="dash"></div>
@@ -378,7 +384,7 @@ function explainerReceipt(sim){
     <div class="row"><span>1x SELF-GRADE AT FULL TIME</span><span class="r">✓ / ✗</span></div>
     <div class="dash"></div>
     <div class="row big"><span>TOTAL</span><span class="r">UNFAKEABLE TRACK RECORD</span></div>
-    <div class="rs" style="margin-top:6px">${sim?"the receipt(s) below are SIMULATED examples.<br>in production, every receipt is a real on-chain transaction.":"every receipt below is a real on-chain transaction.<br>misses cannot be deleted. hits cannot be invented."}</div>
+    <div class="rs" style="margin-top:6px">${foot}</div>
     ${barcode("SHARP")}
     <div class="rs">THANK YOU — VERIFY, DON'T TRUST</div>
   </div>`;
@@ -412,11 +418,11 @@ const SAMPLE_RECEIPTS=[
 ];
 function renderReceipts(isNew){
   const items=signals.map((s,i)=>receiptHtml(s,i,isNew)).join("");
-  if(items) return `<div class="printer"></div><div class="rwrap">${explainerReceipt(demo.active)}${items}</div>`;
-  if(demo.active) return `<div class="printer"></div><div class="rwrap">${explainerReceipt(true)}</div>`;
+  if(items) return `<div class="printer"></div><div class="rwrap">${explainerReceipt(demo.active?"sim":"real")}${items}</div>`;
+  if(demo.active) return `<div class="printer"></div><div class="rwrap">${explainerReceipt("sim")}</div>`;
   // empty real tape: show illustrative samples so the concept reads at rest
   const samples=SAMPLE_RECEIPTS.map((s,i)=>receiptHtml(s,i,false)).join("");
-  return `<div class="printer"></div><div class="rwrap">${explainerReceipt(true)}
+  return `<div class="printer"></div><div class="rwrap">${explainerReceipt("sim")}
     <div class="democap on" style="text-align:center">No live signals yet — here's what a receipt looks like. These are <b style="color:#C99A3A">SIMULATED</b> examples; real ones link to a Solana transaction and can't be edited after the fact.</div>
     ${samples}</div>`;
 }

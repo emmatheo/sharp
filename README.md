@@ -51,6 +51,26 @@ npm start
 # signals:  curl localhost:8788/signals   (each carries its explorer link)
 ```
 
+## Deploying on Render (free tier) — two things that bite
+The agent is a long-running process; the free tier has two sharp edges:
+
+1. **Ephemeral disk wipes state on every redeploy.** `signals.jsonl` (and the
+   odds recordings) live under `DATA_DIR`, which defaults to `./data`. Point it
+   at a Render **persistent disk** so the on-chain track record survives deploys:
+   ```
+   DATA_DIR=/var/data     # mount a persistent disk at /var/data in Render
+   ```
+   Without a persistent disk the JSONL is rebuilt from scratch each deploy — the
+   chain record is never at risk (it's on Solana), but the local index resets.
+
+2. **The instance sleeps after ~15 idle minutes** and will nap through matches.
+   Keep it warm with an external pinger (e.g. UptimeRobot) hitting `/health`
+   every 5 minutes. A self-ping can't help — a sleeping instance runs nothing.
+
+`/health` exposes `awaitingFirstOdds` and `oddsUpdatesSeen` so you can confirm,
+during a live fixture, that odds are actually arriving (the free tier serves
+match odds on the polling path; the client logs which mode it landed in).
+
 ## Demo video script (≤5 min)
 1. (40s) The fake-track-record problem; why on-chain stamps fix it.
 2. (60s) Model whiteboard: the three gates, in plain words.
