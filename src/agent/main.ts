@@ -117,7 +117,11 @@ async function main() {
   // Watchdog: feed silence while anything is in-play is an alert, not a shrug.
   let feedAlert: string | null = null;
   setInterval(() => {
-    const quietMin = lastOddsAt ? (Date.now() - lastOddsAt) / 60_000 : Infinity;
+    // Before any odds have arrived, the feed isn't "silent" — it just hasn't
+    // started (no live fixture yet). Only flag a genuine outage: seen odds,
+    // then went quiet. This avoids the "no odds updates for Infinity min" bug.
+    if (oddsSeen === 0) { feedAlert = null; return; }
+    const quietMin = (Date.now() - lastOddsAt) / 60_000;
     feedAlert = quietMin > 10 ? `no odds updates for ${Math.round(quietMin)} min` : null;
     if (feedAlert) { console.warn(`[watchdog] ${feedAlert}`); push("alert", { alert: feedAlert }); }
   }, 60_000);
@@ -133,6 +137,7 @@ async function main() {
     alert: feedAlert,
     ok: true, agent: "sharp-move-detector", autonomous: true,
     oddsFeed: status, oddsUpdatesSeen: oddsSeen,
+    awaitingFirstOdds: oddsSeen === 0,
     secondsSinceLastOdds: lastOddsAt ? Math.round((Date.now() - lastOddsAt) / 1000) : null,
     ...audit.stats(),
   }));
