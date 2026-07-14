@@ -5,15 +5,19 @@
 <title>SHARP — live match predictions, proven on-chain</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0B0D10;--card:#15181D;--card2:#1B1F26;--line:#242933;--grn:#30D158;--red:#FF453A;
---gray:#8E8E93;--txt:#F4F5F7;--mut:#8A919E;--font:"Inter",-apple-system,sans-serif;--mono:"IBM Plex Mono",monospace}
+:root{--bg:#05070B;--card:rgba(255,255,255,.035);--card2:rgba(255,255,255,.06);--line:rgba(255,255,255,.09);
+--grn:#30D158;--red:#FF453A;--gray:#8E8E93;--txt:#F4F6FB;--mut:#9AA3B2;--iris:#4D7CFF;--iris2:#8B5CFF;
+--font:"Inter",-apple-system,sans-serif;--mono:"IBM Plex Mono",monospace;
+--grad-cta:linear-gradient(120deg,#17C0FF,#4D7CFF 46%,#8B5CFF);--grad-warm:linear-gradient(160deg,#FFECA7,#FF4D4D,#FF0000)}
 *{box-sizing:border-box;margin:0}
 body{background:var(--bg);color:var(--txt);font-family:var(--font);font-size:14px;min-height:100vh;position:relative;overflow-x:hidden}
 body::before{content:"";position:fixed;inset:-30%;z-index:-2;pointer-events:none;
-  background:radial-gradient(circle at 20% 15%,rgba(48,209,88,.10),transparent 42%),
-             radial-gradient(circle at 85% 85%,rgba(48,150,220,.10),transparent 45%),
-             radial-gradient(circle at 60% 40%,rgba(120,80,255,.06),transparent 50%);
-  animation:drift 22s ease-in-out infinite alternate}
+  background:radial-gradient(circle at 22% 12%,rgba(77,124,255,.16),transparent 42%),
+             radial-gradient(circle at 82% 80%,rgba(139,92,255,.13),transparent 46%),
+             radial-gradient(circle at 60% 40%,rgba(23,192,255,.07),transparent 52%);
+  animation:drift 24s ease-in-out infinite alternate}
+body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.6;
+  background:radial-gradient(ellipse at 50% -12%,rgba(77,124,255,.12),transparent 60%)}
 @keyframes drift{0%{transform:translate(0,0) scale(1)}50%{transform:translate(3%,-2%) scale(1.06)}100%{transform:translate(-2%,3%) scale(1.02)}}
 a{color:var(--grn);text-decoration:none}
 .wrap{max-width:640px;margin:0 auto;padding:0 14px 70px;position:relative;z-index:1}
@@ -137,15 +141,102 @@ header{position:sticky;top:0;z-index:9;background:rgba(11,13,16,.94);backdrop-fi
 .simtag{display:inline-block;background:rgba(255,180,84,.16);border:1px solid #FFB454;color:#C99A3A;font-size:9px;font-weight:800;letter-spacing:1px;border-radius:4px;padding:1px 6px;vertical-align:middle}
 .receipt .simwm{position:absolute;top:44px;left:14px;transform:rotate(-10deg);border:2px solid #C99A3A;color:#C99A3A;border-radius:5px;padding:2px 8px;font-weight:800;letter-spacing:1px;font-size:10px;opacity:.75}
 @media(prefers-reduced-motion:reduce){.democap.on{animation:none}}
+
+/* ============ REBRAND — cinematic base · iridescent orb · Swiss gradients ============ */
+/* the agent, as a glowing iridescent orb (brand mark) */
+.orb{position:relative;border-radius:50%;flex:0 0 auto;
+  background:conic-gradient(from -30deg,#1E5BFF,#0A2E9E,#2E7BFF,#0B1F7A,#1E5BFF,#123FCF,#3A6BFF,#0A2E9E,#1E5BFF);
+  box-shadow:0 0 22px rgba(60,110,255,.55),0 0 60px rgba(80,90,255,.22),inset 0 0 18px rgba(8,16,50,.65);
+  animation:orbspin 7s linear infinite}
+.orb::before{content:"";position:absolute;inset:0;border-radius:50%;
+  background:radial-gradient(circle at 36% 30%,rgba(255,255,255,.95),rgba(255,255,255,.22) 18%,transparent 44%)}
+.orb::after{content:"";position:absolute;inset:-5px;border-radius:50%;border:1px solid rgba(120,160,255,.4);animation:orbhalo 3s ease-out infinite}
+@keyframes orbspin{to{transform:rotate(360deg)}}
+@keyframes orbhalo{0%{transform:scale(.9);opacity:.5}100%{transform:scale(1.5);opacity:0}}
+@media(prefers-reduced-motion:reduce){.orb,.orb::after{animation:none}}
+/* header */
+.logo{display:flex;align-items:center;gap:9px}
+.logo .orb{width:22px;height:22px}
+.logo .wm{font-weight:800;font-size:19px;letter-spacing:.5px;background:var(--grad-cta);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.tourbtn{background:var(--card2);border:1px solid var(--line);color:var(--txt);border-radius:9px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);flex:0 0 auto}
+.tourbtn:hover{border-color:var(--iris)}
+/* cinematic hero — the orb "speaks" what the agent does */
+.hero{display:flex;align-items:center;gap:16px;padding:24px 4px 14px;min-height:112px}
+.hero .orb{width:74px;height:74px}
+.eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--mut);margin-bottom:7px}
+.eyebrow b{color:var(--grn)}
+.hero .cap{font-size:18.5px;line-height:1.42;font-weight:600;color:#EAF0FF;min-height:52px}
+.hero .cap b{background:var(--grad-cta);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hero .cap .fade{display:inline-block;animation:capfade .6s ease}
+@keyframes capfade{0%{opacity:0;transform:translateY(6px)}100%{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.hero .cap .fade{animation:none}}
+/* welcome / tutorial modal */
+.welcome{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(3,5,9,.82);backdrop-filter:blur(8px)}
+.welcome.on{display:flex;animation:capfade .3s ease}
+.wcard{max-width:440px;width:100%;background:linear-gradient(180deg,rgba(20,26,38,.97),rgba(9,13,20,.98));border:1px solid var(--line);border-radius:20px;padding:26px 22px;position:relative;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.wcard .close{position:absolute;top:12px;right:14px;color:var(--mut);cursor:pointer;font-size:22px;line-height:1;background:none;border:none}
+.whead{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+.wcard .orb{width:56px;height:56px}
+.wcard h2{font-size:22px;font-weight:800;letter-spacing:.2px}
+.wcard .sub{color:var(--mut);font-size:12.5px;margin-top:3px;line-height:1.45}
+.wsteps{display:flex;flex-direction:column;gap:11px;margin:18px 0}
+.wstep{display:flex;gap:12px;align-items:flex-start}
+.wstep .wn{width:26px;height:26px;flex:0 0 auto;border-radius:8px;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;color:#fff;background:var(--grad-cta)}
+.wstep .wt b{font-size:13.5px}.wstep .wt i{display:block;font-style:normal;color:var(--mut);font-size:12px;margin-top:2px;line-height:1.45}
+.whook{background:rgba(77,124,255,.10);border:1px solid rgba(77,124,255,.28);border-radius:12px;padding:11px 13px;font-size:12.5px;line-height:1.5;color:#DCE6FF}
+.whook b{color:#fff}
+.wbtns{display:flex;gap:10px;margin-top:18px}
+.btn-primary{flex:1;background:var(--grad-cta);color:#fff;border:none;border-radius:12px;padding:12px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:var(--font)}
+.btn-ghost{background:var(--card2);border:1px solid var(--line);color:var(--txt);border-radius:12px;padding:12px 16px;font-weight:600;font-size:13.5px;cursor:pointer;font-family:var(--font)}
+.wfoot{text-align:center;margin-top:14px;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--mut);text-transform:uppercase}
+/* glass + gradient re-skin of existing components */
+.card,.chipstat,.tab,.howto .step,.demolaunch,.democap,.simbar{backdrop-filter:blur(9px)}
+.chipstat.acc{background:linear-gradient(180deg,rgba(48,209,88,.13),transparent);border-color:rgba(48,209,88,.3)}
+.tab.on{background:linear-gradient(180deg,rgba(77,124,255,.16),rgba(77,124,255,.04));border-color:rgba(77,124,255,.4);color:#fff}
+.demolaunch{background:linear-gradient(90deg,rgba(77,124,255,.15),rgba(139,92,255,.10));border-color:rgba(77,124,255,.32)}
+.demolaunch .play{background:var(--grad-cta)}
+.demolaunch .play::after{border-color:var(--iris)}
+.howto .n{color:var(--iris)}
+.sigline b{color:#8FB4FF}
 </style>
 </head>
 <body>
 <header><div class="bar">
-  <span class="logo">SHARP<b>.</b></span><span class="dot" id="dot"></span>
+  <span class="logo"><span class="orb"></span><span class="wm">SHARP</span></span><span class="dot" id="dot"></span>
   <span class="status" id="status">connecting…</span><span class="rp" id="rp">REPLAY</span>
+  <button class="tourbtn" id="tourBtn">Tour</button>
 </div></header>
 
+<div class="welcome" id="welcome">
+  <div class="wcard">
+    <button class="close" id="wClose" aria-label="Close">×</button>
+    <div class="whead"><span class="orb"></span>
+      <div><h2>Meet SHARP</h2>
+        <div class="sub">An autonomous agent that catches sharp betting-odds moves and stamps every prediction on Solana — before the result is known.</div></div>
+    </div>
+    <div class="wsteps">
+      <div class="wstep"><span class="wn">1</span><span class="wt"><b>Watches TxLINE odds, 24/7</b><i>Turns each price into a live win probability and tracks every move.</i></span></div>
+      <div class="wstep"><span class="wn">2</span><span class="wt"><b>Detects the abnormal move</b><i>A signal fires only when a move is statistically sharp (|z| ≥ 3) and economically meaningful.</i></span></div>
+      <div class="wstep"><span class="wn">3</span><span class="wt"><b>Stamps it on Solana</b><i>The prediction becomes a permanent, timestamped on-chain receipt — instantly.</i></span></div>
+      <div class="wstep"><span class="wn">4</span><span class="wt"><b>Grades itself at full time</b><i>Against the final score → ✓ or ✗. Verified accuracy updates automatically.</i></span></div>
+    </div>
+    <div class="whook">Tipster services fake their records — delete the misses, screenshot the hits. <b>SHARP structurally can't:</b> every call is stamped on-chain before the whistle. Misses can't be deleted; hits can't be invented.</div>
+    <div class="wbtns">
+      <button class="btn-primary" id="wTour">▶ Take the 60-second tour</button>
+      <button class="btn-ghost" id="wSkip">Explore</button>
+    </div>
+    <div class="wfoot">Proof over promises · verify, don't trust</div>
+  </div>
+</div>
+
 <div class="wrap">
+  <div class="hero">
+    <span class="orb"></span>
+    <div>
+      <div class="eyebrow">SHARP™ · AUTONOMOUS ODDS AGENT · <b>SOLANA DEVNET</b></div>
+      <div class="cap" id="heroCap">Watching the odds, live.</div>
+    </div>
+  </div>
   <div id="alert"></div>
   <div class="howto">
     <div class="step"><span class="n">1</span><span class="lb"><b>Watch</b><i>TxLINE odds</i></span></div>
@@ -171,7 +262,7 @@ header{position:sticky;top:0;z-index:9;background:rgba(11,13,16,.94);backdrop-fi
   <div class="statrow">
     <div class="chipstat"><div class="k">Signals</div><div class="v" id="sTotal">0</div></div>
     <div class="chipstat"><div class="k">On-chain</div><div class="v" id="sChain">0</div></div>
-    <div class="chipstat"><div class="k">Verified accuracy</div><div class="v grn" id="sAcc">—</div></div>
+    <div class="chipstat acc"><div class="k">Verified accuracy</div><div class="v grn" id="sAcc">—</div></div>
   </div>
   <div id="view"></div>
 </div>
@@ -190,7 +281,7 @@ async function boot(){
     signals=await (await fetch("/signals")).json();
     render();
   }catch{$("#status").textContent="agent offline — npm start";$("#dot").classList.add("dead");}
-  maybeAutoDemo();
+  onboard();
   const es=new EventSource("/events");
   es.onerror=()=>$("#dot").classList.add("dead");
   es.onopen=()=>$("#dot").classList.remove("dead");
@@ -391,17 +482,32 @@ async function endDemo(){
 }
 $("#demoLaunch").onclick=startDemo;
 $("#demoExit").onclick=endDemo;
-// First visit, quiet board → auto-play the walkthrough once so a judge grasps
-// the concept without clicking. Never hijacks a board that already has real
-// live data, and only fires once (remembered in localStorage).
-function maybeAutoDemo(){
-  let seen=false; try{seen=!!localStorage.getItem("sharp_demo_seen");}catch{}
-  if(seen)return;
-  try{localStorage.setItem("sharp_demo_seen","1");}catch{}
-  const hasLive=matches.some(m=>m.phase!=null&&!TERMINAL.has(m.phase)&&m.h!=null);
-  if(signals.length||hasLive)return; // real content present — leave it be
-  setTimeout(()=>{if(!demo.active)startDemo();},2600);
+
+/* ---------- onboarding: welcome + tutorial for new users ---------- */
+function openWelcome(){$("#welcome").classList.add("on");}
+function closeWelcome(){$("#welcome").classList.remove("on");try{localStorage.setItem("sharp_onboarded","1");}catch{}}
+// First-ever visit → show the welcome/tutorial so new users understand the
+// agent before anything else. Remembered in localStorage; replayable via Tour.
+function onboard(){
+  let seen=false; try{seen=!!localStorage.getItem("sharp_onboarded");}catch{}
+  if(!seen) openWelcome();
 }
+$("#wTour").onclick=()=>{closeWelcome();startDemo();};
+$("#wSkip").onclick=closeWelcome;
+$("#wClose").onclick=closeWelcome;
+$("#tourBtn").onclick=openWelcome;
+$("#welcome").onclick=e=>{if(e.target.id==="welcome")closeWelcome();};
+
+/* ---------- cinematic hero: the orb "speaks" what the agent does ---------- */
+const HERO_LINES=[
+  'A sharp move fires — I stamp it on-chain <b>before</b> the whistle.',
+  'I turn every price into a probability, and watch for the <b>abnormal</b> move.',
+  'Every prediction is timestamped on <b>Solana</b>. Unfakeable.',
+  'At full time I grade myself against the score — <b>✓ or ✗</b>.',
+];
+let hIdx=0;
+function rotateHero(){const el=$("#heroCap");if(!el)return;el.innerHTML=`<span class="fade">${HERO_LINES[hIdx%HERO_LINES.length]}</span>`;hIdx++;}
+rotateHero();setInterval(rotateHero,4600);
 
 boot();
 </script>
