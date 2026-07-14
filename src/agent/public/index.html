@@ -111,6 +111,29 @@ header{position:sticky;top:0;z-index:9;background:rgba(11,13,16,.94);backdrop-fi
 .bar i{display:block;background:#17181A;height:100%}
 .upchip{display:inline-block;background:var(--card2);border:1px solid #3A4150;color:var(--mut);font-size:10px;font-weight:700;letter-spacing:1px;border-radius:5px;padding:2px 8px;margin-bottom:4px}
 @media(prefers-reduced-motion:reduce){.receipt.print{animation:none}}
+/* ---- how-it-works strip (always visible so the concept reads on load) ---- */
+.howto{display:flex;align-items:center;gap:6px;overflow-x:auto;padding:14px 2px 2px;scrollbar-width:none}
+.howto::-webkit-scrollbar{display:none}
+.howto .step{flex:0 0 auto;display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:8px 11px}
+.howto .n{width:20px;height:20px;flex:0 0 auto;border-radius:50%;background:var(--card2);border:1px solid #3A4150;color:var(--grn);font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center}
+.howto .lb{line-height:1.2}
+.howto .lb b{font-size:12px;font-weight:700;display:block}
+.howto .lb i{font-size:10px;color:var(--mut);font-style:normal;font-family:var(--mono)}
+.howto .arw{flex:0 0 auto;color:#3A4150;font-size:13px}
+/* ---- demo launcher + simulation chrome ---- */
+.demolaunch{display:flex;align-items:center;gap:11px;background:linear-gradient(90deg,rgba(48,209,88,.12),rgba(48,150,220,.10));border:1px solid #2E4A3A;border-radius:12px;padding:11px 14px;margin:12px 0;cursor:pointer;transition:transform .15s,border-color .2s}
+.demolaunch:hover{transform:translateY(-2px);border-color:var(--grn)}
+.demolaunch .play{width:30px;height:30px;flex:0 0 auto;border-radius:50%;background:var(--grn);color:#0B0D10;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800}
+.demolaunch .dl b{font-weight:700;font-size:13px}.demolaunch .dl i{display:block;font-style:normal;color:var(--mut);font-size:11px;margin-top:1px}
+.simbar{position:sticky;top:52px;z-index:8;display:none;align-items:center;gap:10px;background:rgba(255,180,84,.14);border:1px solid #FFB454;color:#FFB454;border-radius:10px;padding:9px 13px;margin:12px 0;font-size:12px;font-weight:600}
+.simbar.on{display:flex}
+.simbar .x{margin-left:auto;background:transparent;border:1px solid #FFB454;color:#FFB454;border-radius:7px;padding:4px 10px;font-weight:700;cursor:pointer;font-family:var(--font);font-size:12px}
+.democap{display:none;background:var(--card2);border:1px solid var(--line);border-radius:11px;padding:11px 14px;margin:12px 0;font-size:13px;line-height:1.5}
+.democap.on{display:block;animation:rise .35s ease-out}
+.democap b{color:var(--grn)}
+.simtag{display:inline-block;background:rgba(255,180,84,.16);border:1px solid #FFB454;color:#C99A3A;font-size:9px;font-weight:800;letter-spacing:1px;border-radius:4px;padding:1px 6px;vertical-align:middle}
+.receipt .simwm{position:absolute;top:44px;left:14px;transform:rotate(-10deg);border:2px solid #C99A3A;color:#C99A3A;border-radius:5px;padding:2px 8px;font-weight:800;letter-spacing:1px;font-size:10px;opacity:.75}
+@media(prefers-reduced-motion:reduce){.democap.on{animation:none}}
 </style>
 </head>
 <body>
@@ -121,6 +144,23 @@ header{position:sticky;top:0;z-index:9;background:rgba(11,13,16,.94);backdrop-fi
 
 <div class="wrap">
   <div id="alert"></div>
+  <div class="howto">
+    <div class="step"><span class="n">1</span><span class="lb"><b>Watch</b><i>TxLINE odds</i></span></div>
+    <div class="arw">→</div>
+    <div class="step"><span class="n">2</span><span class="lb"><b>Detect</b><i>|z| ≥ 3 move</i></span></div>
+    <div class="arw">→</div>
+    <div class="step"><span class="n">3</span><span class="lb"><b>Print</b><i>receipt</i></span></div>
+    <div class="arw">→</div>
+    <div class="step"><span class="n">4</span><span class="lb"><b>Stamp</b><i>on Solana</i></span></div>
+    <div class="arw">→</div>
+    <div class="step"><span class="n">5</span><span class="lb"><b>Grade</b><i>✓ / ✗ at FT</i></span></div>
+  </div>
+  <div class="demolaunch" id="demoLaunch">
+    <span class="play">▶</span>
+    <span class="dl"><b>New here? Watch the 60-second demo</b><i>A scripted walkthrough of one signal — odds tick → detection → on-chain stamp → self-grade. No live match needed.</i></span>
+  </div>
+  <div class="simbar" id="simbar"><span>◉ SIMULATED WALKTHROUGH — scripted demo, not live data.</span><button class="x" id="demoExit">Exit demo</button></div>
+  <div class="democap" id="democap"></div>
   <div class="tabs">
     <button class="tab on" data-t="matches">Matches</button>
     <button class="tab" data-t="receipts">Receipts</button>
@@ -137,6 +177,7 @@ header{position:sticky;top:0;z-index:9;background:rgba(11,13,16,.94);backdrop-fi
 const $=q=>document.querySelector(q);
 let matches=[], signals=[], tab="matches", network="devnet";
 const TERMINAL=new Set([5,10,13]);
+const demo={active:false,timers:[],rm:null,rs:null,rt:null,rstats:null};
 
 async function boot(){
   try{
@@ -150,19 +191,19 @@ async function boot(){
   es.onerror=()=>$("#dot").classList.add("dead");
   es.onopen=()=>$("#dot").classList.remove("dead");
   es.addEventListener("status",e=>$("#status").textContent=JSON.parse(e.data).status);
-  es.addEventListener("alert",e=>{const a=$("#alert");a.style.display="block";a.textContent="⚠ "+JSON.parse(e.data).alert});
-  es.addEventListener("match",e=>{const m=JSON.parse(e.data);const i=matches.findIndex(x=>x.fixtureId===m.fixtureId);i>=0?matches[i]=m:matches.unshift(m);if(tab==="matches")render(m.fixtureId)});
-  es.addEventListener("signal",e=>{signals.unshift(JSON.parse(e.data));refreshStats();if(tab==="receipts")render(true)});
-  es.addEventListener("graded",e=>{stats(JSON.parse(e.data).stats);hydrateTape()});
+  es.addEventListener("alert",e=>{if(demo.active)return;const a=$("#alert");a.style.display="block";a.textContent="⚠ "+JSON.parse(e.data).alert});
+  es.addEventListener("match",e=>{if(demo.active)return;const m=JSON.parse(e.data);const i=matches.findIndex(x=>x.fixtureId===m.fixtureId);i>=0?matches[i]=m:matches.unshift(m);if(tab==="matches")render(m.fixtureId)});
+  es.addEventListener("signal",e=>{if(demo.active)return;signals.unshift(JSON.parse(e.data));refreshStats();if(tab==="receipts")render(true)});
+  es.addEventListener("graded",e=>{if(demo.active)return;stats(JSON.parse(e.data).stats);hydrateTape()});
   setInterval(refreshStats,20000);
 }
-async function refreshStats(){try{stats(await (await fetch("/health")).json())}catch{}}
+async function refreshStats(){if(demo.active)return;try{stats(await (await fetch("/health")).json())}catch{}}
 async function hydrateTape(){try{signals=await (await fetch("/signals")).json();if(tab==="receipts")render()}catch{}}
 function countUp(el,to){const from=parseInt(el.textContent)||0;if(from===to){el.textContent=to;return;}
   el.closest(".chipstat")?.classList.add("bump");setTimeout(()=>el.closest(".chipstat")?.classList.remove("bump"),250);
   const steps=Math.min(20,Math.abs(to-from)),inc=(to-from)/steps;let i=0;
   const t=setInterval(()=>{i++;el.textContent=Math.round(from+inc*i);if(i>=steps){el.textContent=to;clearInterval(t);}},22);}
-function stats(h){if(h.totalSignals!=null)countUp($("#sTotal"),h.totalSignals);
+function stats(h){if(demo.active)return;if(h.totalSignals!=null)countUp($("#sTotal"),h.totalSignals);
 if(h.onChain!=null)countUp($("#sChain"),h.onChain);
 $("#sAcc").textContent=h.accuracy!=null?h.accuracy+"%":"—";
 if(h.oddsFeed)$("#status").textContent=h.oddsFeed;}
@@ -171,7 +212,7 @@ document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{tab=b.dataset.t;
 document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x===b));render();});
 
 function render(newFx){
-  $("#view").innerHTML = tab==="matches"?renderMatches(newFx):renderReceipts();
+  $("#view").innerHTML = tab==="matches"?renderMatches(newFx):renderReceipts(newFx);
 }
 
 function ring(p,color,glyph){
@@ -242,15 +283,17 @@ function explainerReceipt(){
     <div class="row"><span>1x SELF-GRADE AT FULL TIME</span><span class="r">✓ / ✗</span></div>
     <div class="dash"></div>
     <div class="row big"><span>TOTAL</span><span class="r">UNFAKEABLE TRACK RECORD</span></div>
-    <div class="rs" style="margin-top:6px">every receipt below is a real on-chain transaction.<br>misses cannot be deleted. hits cannot be invented.</div>
+    <div class="rs" style="margin-top:6px">${demo.active?"the receipt below is a scripted SIMULATION.<br>in production, every receipt is a real on-chain transaction.":"every receipt below is a real on-chain transaction.<br>misses cannot be deleted. hits cannot be invented."}</div>
     ${barcode("SHARP")}
     <div class="rs">THANK YOU — VERIFY, DON'T TRUST</div>
   </div>`;
 }
 function renderReceipts(isNew){
   const items=signals.map((s,i)=>{
-    const ex=s.explorer??(s.memoTx?`https://explorer.solana.com/tx/${s.memoTx}?cluster=${network}`:null);
+    const sim=s._sim;
+    const ex=sim?null:(s.explorer??(s.memoTx?`https://explorer.solana.com/tx/${s.memoTx}?cluster=${network}`:null));
     return `<div class="receipt ${isNew&&i===0?"print":""}">
+      ${sim?`<div class="simwm">SIMULATED</div>`:""}
       ${s.grade?`<div class="stamp ${s.grade.won?"win":"loss"}">${s.grade.won?"CORRECT":"WRONG"}</div>`:`<div class="stamp pend">AWAITING RESULT</div>`}
       <div class="rt">PREDICTION RECEIPT</div>
       <div class="rs">${new Date(s.at).toLocaleString()} · fixture ${s.fixtureId}</div>
@@ -261,7 +304,7 @@ function renderReceipts(isNew){
       <div class="row"><span>CONTEXT</span><span class="r">${s.inRunning?"in-play":"pre-match"} · ${s.cause==="goal-reprice"?"goal reprice":"sharp move"}</span></div>
       ${s.grade?`<div class="row"><span>FINAL SCORE</span><span class="r">${esc(s.grade.finalScore??"")}</span></div>`:""}
       <div class="dash"></div>
-      <div class="row big"><span>ON-CHAIN</span><span class="r">${ex?`<a target="_blank" rel="noopener" href="${ex}">${(s.memoTx||"").slice(0,10)}…</a>`:"stamping…"}</span></div>
+      <div class="row big"><span>ON-CHAIN</span><span class="r">${sim?(s.memoTx?`${esc((s.memoTx||"").slice(0,10))}… <span class="simtag">SIM</span>`:"stamping…"):(ex?`<a target="_blank" rel="noopener" href="${ex}">${(s.memoTx||"").slice(0,10)}…</a>`:"stamping…")}</span></div>
       ${barcode(s.memoTx||s.id)}
       <div class="rs">SHARP · PROOF OVER PROMISES</div>
     </div>`;
@@ -269,6 +312,68 @@ function renderReceipts(isNew){
   return `<div class="printer"></div><div class="rwrap">${explainerReceipt()}${items||`<div class="empty" style="color:var(--mut)">No prediction receipts yet — the printer fires the moment the agent catches an abnormal move in a live match.</div>`}</div>`;
 }
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* ---------- guided 60-second simulation ----------
+   Fully client-side and clearly labelled SIMULATED, so the concept reads on
+   demand even with no live match and no recorded feed. */
+function dt(fn,ms){demo.timers.push(setTimeout(fn,ms));}
+function cap(html){const c=$("#democap");c.classList.add("on");c.innerHTML=html;}
+function setTab(t){tab=t;document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x.dataset.t===t));}
+const DEMO_TX="Demo1111111111111111111111111111111111111111"; // not a real signature
+function demoReceipt(stamped,grade){
+  return {id:"demo-sig",at:Date.now(),fixtureId:990099,direction:"IN",outcome:"Northgate FC",
+    pFrom:0.45,pTo:0.58,deltaPts:13,zScore:4.1,inRunning:true,cause:"sharp-move",
+    memoTx:stamped?DEMO_TX:null,grade:grade||null,_sim:true};
+}
+function startDemo(){
+  if(demo.active)return; demo.active=true;
+  demo.rm=matches; demo.rs=signals; demo.rt=tab;
+  demo.rstats={t:$("#sTotal").textContent,c:$("#sChain").textContent,a:$("#sAcc").textContent};
+  $("#simbar").classList.add("on"); $("#demoLaunch").style.display="none";
+  $("#sTotal").textContent="0"; $("#sChain").textContent="0"; $("#sAcc").textContent="—";
+  const dm={fixtureId:990099,name1:"Northgate FC",name2:"Riverside United",
+    probs:[0.45,0.28,0.27],priceNames:["1","X","2"],h:0,a:0,phase:1,upcoming:false,updatedAt:Date.now()};
+  matches=[dm]; signals=[]; setTab("matches"); render();
+  cap("A fixture kicks off. <b>SHARP</b> is already watching TxLINE's odds feed — zero human input.");
+
+  dt(()=>{cap("Odds stream in. Each price becomes a win probability, and the agent tracks every move.");
+    dm.probs=[0.47,0.27,0.26];dm.updatedAt=Date.now();render();},6000);
+
+  dt(()=>{cap("Money piles onto <b>Northgate FC</b> — the probability jumps <b>45% → 58%</b> in one repricing.");
+    dm.probs=[0.58,0.22,0.20];dm.updatedAt=Date.now();dm.lastSignalAt=Date.now();
+    signals=[{fixtureId:990099,direction:"IN",outcome:"Northgate FC",pFrom:0.45,pTo:0.58,zScore:4.1}];
+    render();},12000);
+
+  dt(()=>cap("⚡ <b>Abnormal move detected</b>: |z| = 4.1, +13 pts. All three gates pass → a signal fires."),16500);
+
+  dt(()=>{setTab("receipts");signals=[demoReceipt(false)];render(true);$("#sTotal").textContent="1";
+    cap("A <b>prediction receipt</b> prints instantly — logged <i>before</i> anyone knows the result.");},20500);
+
+  dt(()=>cap("The agent now writes the prediction to <b>Solana</b> as a memo transaction — the part nobody can fake."),27000);
+
+  dt(()=>{signals=[demoReceipt(true)];render();$("#sChain").textContent="1";
+    cap("<b>Stamped on-chain.</b> The receipt carries a transaction reference, timestamped before full time.");},31000);
+
+  dt(()=>{setTab("matches");dm.h=1;dm.a=0;dm.phase=5;dm.updatedAt=Date.now();render();
+    cap("Full time — <b>Northgate FC win 1–0</b>. The predicted side came in.");},37000);
+
+  dt(()=>{setTab("receipts");signals=[demoReceipt(true,{won:true,finalScore:"1-0"})];render();$("#sAcc").textContent="100%";
+    cap("The agent <b>grades itself</b> against the final score → ✓ CORRECT. Verified accuracy updates automatically.");},42000);
+
+  dt(()=>cap("That's <b>SHARP</b>: watch → detect → stamp → grade. Every receipt is on-chain, timestamped, and impossible to rewrite.<br><br><b style='color:var(--txt)'>Misses can't be deleted. Hits can't be invented.</b>"),48000);
+}
+async function endDemo(){
+  demo.timers.forEach(clearTimeout); demo.timers=[];
+  if(!demo.active)return; demo.active=false;
+  $("#simbar").classList.remove("on"); $("#democap").classList.remove("on"); $("#demoLaunch").style.display="";
+  matches=demo.rm||[]; signals=demo.rs||[]; setTab(demo.rt||"matches");
+  if(demo.rstats){$("#sTotal").textContent=demo.rstats.t;$("#sChain").textContent=demo.rstats.c;$("#sAcc").textContent=demo.rstats.a;}
+  render();
+  try{matches=await (await fetch("/matches")).json();signals=await (await fetch("/signals")).json();render();refreshStats();}catch{}
+}
+$("#demoLaunch").onclick=startDemo;
+$("#demoExit").onclick=endDemo;
+
 boot();
 </script>
 </body>
