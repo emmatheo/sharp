@@ -5,15 +5,19 @@
 <title>SHARP — live match predictions, proven on-chain</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0B0D10;--card:#15181D;--card2:#1B1F26;--line:#242933;--grn:#30D158;--red:#FF453A;
---gray:#8E8E93;--txt:#F4F5F7;--mut:#8A919E;--font:"Inter",-apple-system,sans-serif;--mono:"IBM Plex Mono",monospace}
+:root{--bg:#05070B;--card:rgba(255,255,255,.035);--card2:rgba(255,255,255,.06);--line:rgba(255,255,255,.09);
+--grn:#30D158;--red:#FF453A;--gray:#8E8E93;--txt:#F4F6FB;--mut:#9AA3B2;--iris:#4D7CFF;--iris2:#8B5CFF;
+--font:"Inter",-apple-system,sans-serif;--mono:"IBM Plex Mono",monospace;
+--grad-cta:linear-gradient(120deg,#17C0FF,#4D7CFF 46%,#8B5CFF);--grad-warm:linear-gradient(160deg,#FFECA7,#FF4D4D,#FF0000)}
 *{box-sizing:border-box;margin:0}
 body{background:var(--bg);color:var(--txt);font-family:var(--font);font-size:14px;min-height:100vh;position:relative;overflow-x:hidden}
 body::before{content:"";position:fixed;inset:-30%;z-index:-2;pointer-events:none;
-  background:radial-gradient(circle at 20% 15%,rgba(48,209,88,.10),transparent 42%),
-             radial-gradient(circle at 85% 85%,rgba(48,150,220,.10),transparent 45%),
-             radial-gradient(circle at 60% 40%,rgba(120,80,255,.06),transparent 50%);
-  animation:drift 22s ease-in-out infinite alternate}
+  background:radial-gradient(circle at 22% 12%,rgba(77,124,255,.16),transparent 42%),
+             radial-gradient(circle at 82% 80%,rgba(139,92,255,.13),transparent 46%),
+             radial-gradient(circle at 60% 40%,rgba(23,192,255,.07),transparent 52%);
+  animation:drift 24s ease-in-out infinite alternate}
+body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.6;
+  background:radial-gradient(ellipse at 50% -12%,rgba(77,124,255,.12),transparent 60%)}
 @keyframes drift{0%{transform:translate(0,0) scale(1)}50%{transform:translate(3%,-2%) scale(1.06)}100%{transform:translate(-2%,3%) scale(1.02)}}
 a{color:var(--grn);text-decoration:none}
 .wrap{max-width:640px;margin:0 auto;padding:0 14px 70px;position:relative;z-index:1}
@@ -111,16 +115,146 @@ header{position:sticky;top:0;z-index:9;background:rgba(11,13,16,.94);backdrop-fi
 .bar i{display:block;background:#17181A;height:100%}
 .upchip{display:inline-block;background:var(--card2);border:1px solid #3A4150;color:var(--mut);font-size:10px;font-weight:700;letter-spacing:1px;border-radius:5px;padding:2px 8px;margin-bottom:4px}
 @media(prefers-reduced-motion:reduce){.receipt.print{animation:none}}
+/* ---- how-it-works strip (always visible so the concept reads on load) ---- */
+.howto{display:flex;align-items:center;gap:6px;overflow-x:auto;padding:14px 2px 2px;scrollbar-width:none}
+.howto::-webkit-scrollbar{display:none}
+.howto .step{flex:0 0 auto;display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:8px 11px}
+.howto .n{width:20px;height:20px;flex:0 0 auto;border-radius:50%;background:var(--card2);border:1px solid #3A4150;color:var(--grn);font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center}
+.howto .lb{line-height:1.2}
+.howto .lb b{font-size:12px;font-weight:700;display:block}
+.howto .lb i{font-size:10px;color:var(--mut);font-style:normal;font-family:var(--mono)}
+.howto .arw{flex:0 0 auto;color:#3A4150;font-size:13px}
+/* ---- demo launcher + simulation chrome ---- */
+.demolaunch{display:flex;align-items:center;gap:11px;background:linear-gradient(90deg,rgba(48,209,88,.12),rgba(48,150,220,.10));border:1px solid #2E4A3A;border-radius:12px;padding:11px 14px;margin:12px 0;cursor:pointer;transition:transform .15s,border-color .2s}
+.demolaunch:hover{transform:translateY(-2px);border-color:var(--grn)}
+.demolaunch .play{width:30px;height:30px;flex:0 0 auto;border-radius:50%;background:var(--grn);color:#0B0D10;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;position:relative}
+.demolaunch .play::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:2px solid var(--grn);opacity:0;animation:playpulse 2.2s ease-out infinite}
+@keyframes playpulse{0%{transform:scale(.8);opacity:.6}100%{transform:scale(1.7);opacity:0}}
+@media(prefers-reduced-motion:reduce){.demolaunch .play::after{animation:none}}
+.demolaunch .dl b{font-weight:700;font-size:13px}.demolaunch .dl i{display:block;font-style:normal;color:var(--mut);font-size:11px;margin-top:1px}
+.simbar{position:sticky;top:52px;z-index:8;display:none;align-items:center;gap:10px;background:rgba(255,180,84,.14);border:1px solid #FFB454;color:#FFB454;border-radius:10px;padding:9px 13px;margin:12px 0;font-size:12px;font-weight:600}
+.simbar.on{display:flex}
+.simbar .x{margin-left:auto;background:transparent;border:1px solid #FFB454;color:#FFB454;border-radius:7px;padding:4px 10px;font-weight:700;cursor:pointer;font-family:var(--font);font-size:12px}
+.democap{display:none;background:var(--card2);border:1px solid var(--line);border-radius:11px;padding:11px 14px;margin:12px 0;font-size:13px;line-height:1.5}
+.democap.on{display:block;animation:rise .35s ease-out}
+.democap b{color:var(--grn)}
+.simtag{display:inline-block;background:rgba(255,180,84,.16);border:1px solid #FFB454;color:#C99A3A;font-size:9px;font-weight:800;letter-spacing:1px;border-radius:4px;padding:1px 6px;vertical-align:middle}
+.receipt .simwm{position:absolute;top:44px;left:14px;transform:rotate(-10deg);border:2px solid #C99A3A;color:#C99A3A;border-radius:5px;padding:2px 8px;font-weight:800;letter-spacing:1px;font-size:10px;opacity:.75}
+@media(prefers-reduced-motion:reduce){.democap.on{animation:none}}
+
+/* ============ REBRAND — cinematic base · iridescent orb · Swiss gradients ============ */
+/* the agent, as a glowing iridescent orb (brand mark) */
+.orb{position:relative;border-radius:50%;flex:0 0 auto;
+  background:conic-gradient(from -30deg,#1E5BFF,#0A2E9E,#2E7BFF,#0B1F7A,#1E5BFF,#123FCF,#3A6BFF,#0A2E9E,#1E5BFF);
+  box-shadow:0 0 22px rgba(60,110,255,.55),0 0 60px rgba(80,90,255,.22),inset 0 0 18px rgba(8,16,50,.65);
+  animation:orbspin 7s linear infinite}
+.orb::before{content:"";position:absolute;inset:0;border-radius:50%;
+  background:radial-gradient(circle at 36% 30%,rgba(255,255,255,.95),rgba(255,255,255,.22) 18%,transparent 44%)}
+.orb::after{content:"";position:absolute;inset:-5px;border-radius:50%;border:1px solid rgba(120,160,255,.4);animation:orbhalo 3s ease-out infinite}
+@keyframes orbspin{to{transform:rotate(360deg)}}
+@keyframes orbhalo{0%{transform:scale(.9);opacity:.5}100%{transform:scale(1.5);opacity:0}}
+@media(prefers-reduced-motion:reduce){.orb,.orb::after{animation:none}}
+/* header */
+.logo{display:flex;align-items:center;gap:9px}
+.logo .orb{width:22px;height:22px}
+.logo .wm{font-weight:800;font-size:19px;letter-spacing:.5px;background:var(--grad-cta);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.tourbtn{background:var(--card2);border:1px solid var(--line);color:var(--txt);border-radius:9px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);flex:0 0 auto}
+.tourbtn:hover{border-color:var(--iris)}
+/* cinematic hero — the orb "speaks" what the agent does */
+.hero{display:flex;align-items:center;gap:16px;padding:24px 4px 14px;min-height:112px}
+.hero .orb{width:74px;height:74px}
+.eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--mut);margin-bottom:7px}
+.eyebrow b{color:var(--grn)}
+.hero .cap{font-size:18.5px;line-height:1.42;font-weight:600;color:#EAF0FF;min-height:52px}
+.hero .cap b{background:var(--grad-cta);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hero .cap .fade{display:inline-block;animation:capfade .6s ease}
+@keyframes capfade{0%{opacity:0;transform:translateY(6px)}100%{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.hero .cap .fade{animation:none}}
+/* welcome / tutorial modal */
+.welcome{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(3,5,9,.82);backdrop-filter:blur(8px)}
+.welcome.on{display:flex;animation:capfade .3s ease}
+.wcard{max-width:440px;width:100%;background:linear-gradient(180deg,rgba(20,26,38,.97),rgba(9,13,20,.98));border:1px solid var(--line);border-radius:20px;padding:26px 22px;position:relative;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.wcard .close{position:absolute;top:12px;right:14px;color:var(--mut);cursor:pointer;font-size:22px;line-height:1;background:none;border:none}
+.whead{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+.wcard .orb{width:56px;height:56px}
+.wcard h2{font-size:22px;font-weight:800;letter-spacing:.2px}
+.wcard .sub{color:var(--mut);font-size:12.5px;margin-top:3px;line-height:1.45}
+.wsteps{display:flex;flex-direction:column;gap:11px;margin:18px 0}
+.wstep{display:flex;gap:12px;align-items:flex-start}
+.wstep .wn{width:26px;height:26px;flex:0 0 auto;border-radius:8px;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;color:#fff;background:var(--grad-cta)}
+.wstep .wt b{font-size:13.5px}.wstep .wt i{display:block;font-style:normal;color:var(--mut);font-size:12px;margin-top:2px;line-height:1.45}
+.whook{background:rgba(77,124,255,.10);border:1px solid rgba(77,124,255,.28);border-radius:12px;padding:11px 13px;font-size:12.5px;line-height:1.5;color:#DCE6FF}
+.whook b{color:#fff}
+.wbtns{display:flex;gap:10px;margin-top:18px}
+.btn-primary{flex:1;background:var(--grad-cta);color:#fff;border:none;border-radius:12px;padding:12px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:var(--font)}
+.btn-ghost{background:var(--card2);border:1px solid var(--line);color:var(--txt);border-radius:12px;padding:12px 16px;font-weight:600;font-size:13.5px;cursor:pointer;font-family:var(--font)}
+.wfoot{text-align:center;margin-top:14px;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--mut);text-transform:uppercase}
+/* glass + gradient re-skin of existing components */
+.card,.chipstat,.tab,.howto .step,.demolaunch,.democap,.simbar{backdrop-filter:blur(9px)}
+.chipstat.acc{background:linear-gradient(180deg,rgba(48,209,88,.13),transparent);border-color:rgba(48,209,88,.3)}
+.tab.on{background:linear-gradient(180deg,rgba(77,124,255,.16),rgba(77,124,255,.04));border-color:rgba(77,124,255,.4);color:#fff}
+.demolaunch{background:linear-gradient(90deg,rgba(77,124,255,.15),rgba(139,92,255,.10));border-color:rgba(77,124,255,.32)}
+.demolaunch .play{background:var(--grad-cta)}
+.demolaunch .play::after{border-color:var(--iris)}
+.howto .n{color:var(--iris)}
+.sigline b{color:#8FB4FF}
 </style>
 </head>
 <body>
 <header><div class="bar">
-  <span class="logo">SHARP<b>.</b></span><span class="dot" id="dot"></span>
+  <span class="logo"><span class="orb"></span><span class="wm">SHARP</span></span><span class="dot" id="dot"></span>
   <span class="status" id="status">connecting…</span><span class="rp" id="rp">REPLAY</span>
+  <button class="tourbtn" id="tourBtn">Tour</button>
 </div></header>
 
+<div class="welcome" id="welcome">
+  <div class="wcard">
+    <button class="close" id="wClose" aria-label="Close">×</button>
+    <div class="whead"><span class="orb"></span>
+      <div><h2>Meet SHARP</h2>
+        <div class="sub">An autonomous agent that catches sharp betting-odds moves and stamps every prediction on Solana — before the result is known.</div></div>
+    </div>
+    <div class="wsteps">
+      <div class="wstep"><span class="wn">1</span><span class="wt"><b>Watches TxLINE odds, 24/7</b><i>Turns each price into a live win probability and tracks every move.</i></span></div>
+      <div class="wstep"><span class="wn">2</span><span class="wt"><b>Detects the abnormal move</b><i>A signal fires only when a move is statistically sharp (|z| ≥ 3) and economically meaningful.</i></span></div>
+      <div class="wstep"><span class="wn">3</span><span class="wt"><b>Stamps it on Solana</b><i>The prediction becomes a permanent, timestamped on-chain receipt — instantly.</i></span></div>
+      <div class="wstep"><span class="wn">4</span><span class="wt"><b>Grades itself at full time</b><i>Against the final score → ✓ or ✗. Verified accuracy updates automatically.</i></span></div>
+    </div>
+    <div class="whook">Tipster services fake their records — delete the misses, screenshot the hits. <b>SHARP structurally can't:</b> every call is stamped on-chain before the whistle. Misses can't be deleted; hits can't be invented.</div>
+    <div class="wbtns">
+      <button class="btn-primary" id="wTour">▶ Take the 60-second tour</button>
+      <button class="btn-ghost" id="wSkip">Explore</button>
+    </div>
+    <div class="wfoot">Proof over promises · verify, don't trust</div>
+  </div>
+</div>
+
 <div class="wrap">
+  <div class="hero">
+    <span class="orb"></span>
+    <div>
+      <div class="eyebrow">SHARP™ · AUTONOMOUS ODDS AGENT · <b>SOLANA DEVNET</b></div>
+      <div class="cap" id="heroCap">Watching the odds, live.</div>
+    </div>
+  </div>
   <div id="alert"></div>
+  <div class="howto">
+    <div class="step"><span class="n">1</span><span class="lb"><b>Watch</b><i>TxLINE odds</i></span></div>
+    <div class="arw">→</div>
+    <div class="step"><span class="n">2</span><span class="lb"><b>Detect</b><i>|z| ≥ 3 move</i></span></div>
+    <div class="arw">→</div>
+    <div class="step"><span class="n">3</span><span class="lb"><b>Print</b><i>receipt</i></span></div>
+    <div class="arw">→</div>
+    <div class="step"><span class="n">4</span><span class="lb"><b>Stamp</b><i>on Solana</i></span></div>
+    <div class="arw">→</div>
+    <div class="step"><span class="n">5</span><span class="lb"><b>Grade</b><i>✓ / ✗ at FT</i></span></div>
+  </div>
+  <div class="demolaunch" id="demoLaunch">
+    <span class="play">▶</span>
+    <span class="dl"><b>New here? Watch the 60-second demo</b><i>A scripted walkthrough of one signal — odds tick → detection → on-chain stamp → self-grade. No live match needed.</i></span>
+  </div>
+  <div class="simbar" id="simbar"><span>◉ SIMULATED WALKTHROUGH — scripted demo, not live data.</span><button class="x" id="demoExit">Exit demo</button></div>
+  <div class="democap" id="democap"></div>
   <div class="tabs">
     <button class="tab on" data-t="matches">Matches</button>
     <button class="tab" data-t="receipts">Receipts</button>
@@ -128,7 +262,7 @@ header{position:sticky;top:0;z-index:9;background:rgba(11,13,16,.94);backdrop-fi
   <div class="statrow">
     <div class="chipstat"><div class="k">Signals</div><div class="v" id="sTotal">0</div></div>
     <div class="chipstat"><div class="k">On-chain</div><div class="v" id="sChain">0</div></div>
-    <div class="chipstat"><div class="k">Verified accuracy</div><div class="v grn" id="sAcc">—</div></div>
+    <div class="chipstat acc"><div class="k">Verified accuracy</div><div class="v grn" id="sAcc">—</div></div>
   </div>
   <div id="view"></div>
 </div>
@@ -137,6 +271,7 @@ header{position:sticky;top:0;z-index:9;background:rgba(11,13,16,.94);backdrop-fi
 const $=q=>document.querySelector(q);
 let matches=[], signals=[], tab="matches", network="devnet";
 const TERMINAL=new Set([5,10,13]);
+const demo={active:false,timers:[],rm:null,rs:null,rt:null,rstats:null};
 
 async function boot(){
   try{
@@ -146,23 +281,24 @@ async function boot(){
     signals=await (await fetch("/signals")).json();
     render();
   }catch{$("#status").textContent="agent offline — npm start";$("#dot").classList.add("dead");}
+  onboard();
   const es=new EventSource("/events");
   es.onerror=()=>$("#dot").classList.add("dead");
   es.onopen=()=>$("#dot").classList.remove("dead");
   es.addEventListener("status",e=>$("#status").textContent=JSON.parse(e.data).status);
-  es.addEventListener("alert",e=>{const a=$("#alert");a.style.display="block";a.textContent="⚠ "+JSON.parse(e.data).alert});
-  es.addEventListener("match",e=>{const m=JSON.parse(e.data);const i=matches.findIndex(x=>x.fixtureId===m.fixtureId);i>=0?matches[i]=m:matches.unshift(m);if(tab==="matches")render(m.fixtureId)});
-  es.addEventListener("signal",e=>{signals.unshift(JSON.parse(e.data));refreshStats();if(tab==="receipts")render(true)});
-  es.addEventListener("graded",e=>{stats(JSON.parse(e.data).stats);hydrateTape()});
+  es.addEventListener("alert",e=>{if(demo.active)return;const a=$("#alert");a.style.display="block";a.textContent="⚠ "+JSON.parse(e.data).alert});
+  es.addEventListener("match",e=>{if(demo.active)return;const m=JSON.parse(e.data);const i=matches.findIndex(x=>x.fixtureId===m.fixtureId);i>=0?matches[i]=m:matches.unshift(m);if(tab==="matches")render(m.fixtureId)});
+  es.addEventListener("signal",e=>{if(demo.active)return;signals.unshift(JSON.parse(e.data));refreshStats();if(tab==="receipts")render(true)});
+  es.addEventListener("graded",e=>{if(demo.active)return;stats(JSON.parse(e.data).stats);hydrateTape()});
   setInterval(refreshStats,20000);
 }
-async function refreshStats(){try{stats(await (await fetch("/health")).json())}catch{}}
+async function refreshStats(){if(demo.active)return;try{stats(await (await fetch("/health")).json())}catch{}}
 async function hydrateTape(){try{signals=await (await fetch("/signals")).json();if(tab==="receipts")render()}catch{}}
 function countUp(el,to){const from=parseInt(el.textContent)||0;if(from===to){el.textContent=to;return;}
   el.closest(".chipstat")?.classList.add("bump");setTimeout(()=>el.closest(".chipstat")?.classList.remove("bump"),250);
   const steps=Math.min(20,Math.abs(to-from)),inc=(to-from)/steps;let i=0;
   const t=setInterval(()=>{i++;el.textContent=Math.round(from+inc*i);if(i>=steps){el.textContent=to;clearInterval(t);}},22);}
-function stats(h){if(h.totalSignals!=null)countUp($("#sTotal"),h.totalSignals);
+function stats(h){if(demo.active)return;if(h.totalSignals!=null)countUp($("#sTotal"),h.totalSignals);
 if(h.onChain!=null)countUp($("#sChain"),h.onChain);
 $("#sAcc").textContent=h.accuracy!=null?h.accuracy+"%":"—";
 if(h.oddsFeed)$("#status").textContent=h.oddsFeed;}
@@ -171,7 +307,7 @@ document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{tab=b.dataset.t;
 document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x===b));render();});
 
 function render(newFx){
-  $("#view").innerHTML = tab==="matches"?renderMatches(newFx):renderReceipts();
+  $("#view").innerHTML = tab==="matches"?renderMatches(newFx):renderReceipts(newFx);
 }
 
 function ring(p,color,glyph){
@@ -231,7 +367,7 @@ function barcode(seed){
   out+=`<i style="width:${w}px;margin-right:${gap}px"></i>`;}
   return `<div class="bar">${out}</div>`;
 }
-function explainerReceipt(){
+function explainerReceipt(sim){
   return `<div class="receipt">
     <div class="rt">SHARP AGENT</div><div class="rs">AUTONOMOUS ODDS SURVEILLANCE · SOLANA DEVNET</div>
     <div class="dash"></div>
@@ -242,15 +378,16 @@ function explainerReceipt(){
     <div class="row"><span>1x SELF-GRADE AT FULL TIME</span><span class="r">✓ / ✗</span></div>
     <div class="dash"></div>
     <div class="row big"><span>TOTAL</span><span class="r">UNFAKEABLE TRACK RECORD</span></div>
-    <div class="rs" style="margin-top:6px">every receipt below is a real on-chain transaction.<br>misses cannot be deleted. hits cannot be invented.</div>
+    <div class="rs" style="margin-top:6px">${sim?"the receipt(s) below are SIMULATED examples.<br>in production, every receipt is a real on-chain transaction.":"every receipt below is a real on-chain transaction.<br>misses cannot be deleted. hits cannot be invented."}</div>
     ${barcode("SHARP")}
     <div class="rs">THANK YOU — VERIFY, DON'T TRUST</div>
   </div>`;
 }
-function renderReceipts(isNew){
-  const items=signals.map((s,i)=>{
-    const ex=s.explorer??(s.memoTx?`https://explorer.solana.com/tx/${s.memoTx}?cluster=${network}`:null);
-    return `<div class="receipt ${isNew&&i===0?"print":""}">
+function receiptHtml(s,i,isNew){
+  const sim=s._sim;
+  const ex=sim?null:(s.explorer??(s.memoTx?`https://explorer.solana.com/tx/${s.memoTx}?cluster=${network}`:null));
+  return `<div class="receipt ${isNew&&i===0?"print":""}">
+      ${sim?`<div class="simwm">SIMULATED</div>`:""}
       ${s.grade?`<div class="stamp ${s.grade.won?"win":"loss"}">${s.grade.won?"CORRECT":"WRONG"}</div>`:`<div class="stamp pend">AWAITING RESULT</div>`}
       <div class="rt">PREDICTION RECEIPT</div>
       <div class="rs">${new Date(s.at).toLocaleString()} · fixture ${s.fixtureId}</div>
@@ -261,14 +398,117 @@ function renderReceipts(isNew){
       <div class="row"><span>CONTEXT</span><span class="r">${s.inRunning?"in-play":"pre-match"} · ${s.cause==="goal-reprice"?"goal reprice":"sharp move"}</span></div>
       ${s.grade?`<div class="row"><span>FINAL SCORE</span><span class="r">${esc(s.grade.finalScore??"")}</span></div>`:""}
       <div class="dash"></div>
-      <div class="row big"><span>ON-CHAIN</span><span class="r">${ex?`<a target="_blank" rel="noopener" href="${ex}">${(s.memoTx||"").slice(0,10)}…</a>`:"stamping…"}</span></div>
+      <div class="row big"><span>ON-CHAIN</span><span class="r">${sim?(s.memoTx?`${esc((s.memoTx||"").slice(0,10))}… <span class="simtag">SIM</span>`:"stamping…"):(ex?`<a target="_blank" rel="noopener" href="${ex}">${(s.memoTx||"").slice(0,10)}…</a>`:"stamping…")}</span></div>
       ${barcode(s.memoTx||s.id)}
       <div class="rs">SHARP · PROOF OVER PROMISES</div>
     </div>`;
-  }).join("");
-  return `<div class="printer"></div><div class="rwrap">${explainerReceipt()}${items||`<div class="empty" style="color:var(--mut)">No prediction receipts yet — the printer fires the moment the agent catches an abnormal move in a live match.</div>`}</div>`;
+}
+// Illustrative receipts shown when no real signals exist yet, so the Receipts
+// tab teaches the concept at rest. Clearly marked SIMULATED; link to no tx.
+const SAMPLE_RECEIPTS=[
+  {id:"sample-1",_sim:true,at:Date.now()-6.4e6,fixtureId:770101,direction:"IN",outcome:"Northgate FC",pFrom:0.45,pTo:0.58,deltaPts:13,zScore:4.1,inRunning:true,cause:"sharp-move",memoTx:"Sample11111111111111111111111111111111111111",grade:{won:true,finalScore:"1-0"}},
+  {id:"sample-2",_sim:true,at:Date.now()-1.1e7,fixtureId:770102,direction:"IN",outcome:"Riverside United",pFrom:0.34,pTo:0.47,deltaPts:13,zScore:3.6,inRunning:false,cause:"sharp-move",memoTx:"Sample22222222222222222222222222222222222222",grade:{won:false,finalScore:"0-2"}},
+  {id:"sample-3",_sim:true,at:Date.now()-9e5,fixtureId:770103,direction:"OUT",outcome:"Draw",pFrom:0.29,pTo:0.20,deltaPts:-9,zScore:3.2,inRunning:true,cause:"goal-reprice",memoTx:null,grade:null},
+];
+function renderReceipts(isNew){
+  const items=signals.map((s,i)=>receiptHtml(s,i,isNew)).join("");
+  if(items) return `<div class="printer"></div><div class="rwrap">${explainerReceipt(demo.active)}${items}</div>`;
+  if(demo.active) return `<div class="printer"></div><div class="rwrap">${explainerReceipt(true)}</div>`;
+  // empty real tape: show illustrative samples so the concept reads at rest
+  const samples=SAMPLE_RECEIPTS.map((s,i)=>receiptHtml(s,i,false)).join("");
+  return `<div class="printer"></div><div class="rwrap">${explainerReceipt(true)}
+    <div class="democap on" style="text-align:center">No live signals yet — here's what a receipt looks like. These are <b style="color:#C99A3A">SIMULATED</b> examples; real ones link to a Solana transaction and can't be edited after the fact.</div>
+    ${samples}</div>`;
 }
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* ---------- guided 60-second simulation ----------
+   Fully client-side and clearly labelled SIMULATED, so the concept reads on
+   demand even with no live match and no recorded feed. */
+function dt(fn,ms){demo.timers.push(setTimeout(fn,ms));}
+function cap(html){const c=$("#democap");c.classList.add("on");c.innerHTML=html;}
+function setTab(t){tab=t;document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x.dataset.t===t));}
+const DEMO_TX="Demo1111111111111111111111111111111111111111"; // not a real signature
+function demoReceipt(stamped,grade){
+  return {id:"demo-sig",at:Date.now(),fixtureId:990099,direction:"IN",outcome:"Northgate FC",
+    pFrom:0.45,pTo:0.58,deltaPts:13,zScore:4.1,inRunning:true,cause:"sharp-move",
+    memoTx:stamped?DEMO_TX:null,grade:grade||null,_sim:true};
+}
+function startDemo(){
+  if(demo.active)return; demo.active=true;
+  demo.rm=matches; demo.rs=signals; demo.rt=tab;
+  demo.rstats={t:$("#sTotal").textContent,c:$("#sChain").textContent,a:$("#sAcc").textContent};
+  $("#simbar").classList.add("on"); $("#demoLaunch").style.display="none";
+  $("#sTotal").textContent="0"; $("#sChain").textContent="0"; $("#sAcc").textContent="—";
+  const dm={fixtureId:990099,name1:"Northgate FC",name2:"Riverside United",
+    probs:[0.45,0.28,0.27],priceNames:["1","X","2"],h:0,a:0,phase:1,upcoming:false,updatedAt:Date.now()};
+  matches=[dm]; signals=[]; setTab("matches"); render();
+  cap("A fixture kicks off. <b>SHARP</b> is already watching TxLINE's odds feed — zero human input.");
+
+  dt(()=>{cap("Odds stream in. Each price becomes a win probability, and the agent tracks every move.");
+    dm.probs=[0.47,0.27,0.26];dm.updatedAt=Date.now();render();},6000);
+
+  dt(()=>{cap("Money piles onto <b>Northgate FC</b> — the probability jumps <b>45% → 58%</b> in one repricing.");
+    dm.probs=[0.58,0.22,0.20];dm.updatedAt=Date.now();dm.lastSignalAt=Date.now();
+    signals=[{fixtureId:990099,direction:"IN",outcome:"Northgate FC",pFrom:0.45,pTo:0.58,zScore:4.1}];
+    render();},12000);
+
+  dt(()=>cap("⚡ <b>Abnormal move detected</b>: |z| = 4.1, +13 pts. All three gates pass → a signal fires."),16500);
+
+  dt(()=>{setTab("receipts");signals=[demoReceipt(false)];render(true);$("#sTotal").textContent="1";
+    cap("A <b>prediction receipt</b> prints instantly — logged <i>before</i> anyone knows the result.");},20500);
+
+  dt(()=>cap("The agent now writes the prediction to <b>Solana</b> as a memo transaction — the part nobody can fake."),27000);
+
+  dt(()=>{signals=[demoReceipt(true)];render();$("#sChain").textContent="1";
+    cap("<b>Stamped on-chain.</b> The receipt carries a transaction reference, timestamped before full time.");},31000);
+
+  dt(()=>{setTab("matches");dm.h=1;dm.a=0;dm.phase=5;dm.updatedAt=Date.now();render();
+    cap("Full time — <b>Northgate FC win 1–0</b>. The predicted side came in.");},37000);
+
+  dt(()=>{setTab("receipts");signals=[demoReceipt(true,{won:true,finalScore:"1-0"})];render();$("#sAcc").textContent="100%";
+    cap("The agent <b>grades itself</b> against the final score → ✓ CORRECT. Verified accuracy updates automatically.");},42000);
+
+  dt(()=>cap("That's <b>SHARP</b>: watch → detect → stamp → grade. Every receipt is on-chain, timestamped, and impossible to rewrite.<br><br><b style='color:var(--txt)'>Misses can't be deleted. Hits can't be invented.</b>"),48000);
+}
+async function endDemo(){
+  demo.timers.forEach(clearTimeout); demo.timers=[];
+  if(!demo.active)return; demo.active=false;
+  $("#simbar").classList.remove("on"); $("#democap").classList.remove("on"); $("#demoLaunch").style.display="";
+  matches=demo.rm||[]; signals=demo.rs||[]; setTab(demo.rt||"matches");
+  if(demo.rstats){$("#sTotal").textContent=demo.rstats.t;$("#sChain").textContent=demo.rstats.c;$("#sAcc").textContent=demo.rstats.a;}
+  render();
+  try{matches=await (await fetch("/matches")).json();signals=await (await fetch("/signals")).json();render();refreshStats();}catch{}
+}
+$("#demoLaunch").onclick=startDemo;
+$("#demoExit").onclick=endDemo;
+
+/* ---------- onboarding: welcome + tutorial for new users ---------- */
+function openWelcome(){$("#welcome").classList.add("on");}
+function closeWelcome(){$("#welcome").classList.remove("on");try{localStorage.setItem("sharp_onboarded","1");}catch{}}
+// First-ever visit → show the welcome/tutorial so new users understand the
+// agent before anything else. Remembered in localStorage; replayable via Tour.
+function onboard(){
+  let seen=false; try{seen=!!localStorage.getItem("sharp_onboarded");}catch{}
+  if(!seen) openWelcome();
+}
+$("#wTour").onclick=()=>{closeWelcome();startDemo();};
+$("#wSkip").onclick=closeWelcome;
+$("#wClose").onclick=closeWelcome;
+$("#tourBtn").onclick=openWelcome;
+$("#welcome").onclick=e=>{if(e.target.id==="welcome")closeWelcome();};
+
+/* ---------- cinematic hero: the orb "speaks" what the agent does ---------- */
+const HERO_LINES=[
+  'A sharp move fires — I stamp it on-chain <b>before</b> the whistle.',
+  'I turn every price into a probability, and watch for the <b>abnormal</b> move.',
+  'Every prediction is timestamped on <b>Solana</b>. Unfakeable.',
+  'At full time I grade myself against the score — <b>✓ or ✗</b>.',
+];
+let hIdx=0;
+function rotateHero(){const el=$("#heroCap");if(!el)return;el.innerHTML=`<span class="fade">${HERO_LINES[hIdx%HERO_LINES.length]}</span>`;hIdx++;}
+rotateHero();setInterval(rotateHero,4600);
+
 boot();
 </script>
 </body>
