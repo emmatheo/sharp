@@ -272,7 +272,7 @@ function barcode(seed){
   out+=`<i style="width:${w}px;margin-right:${gap}px"></i>`;}
   return `<div class="bar">${out}</div>`;
 }
-function explainerReceipt(){
+function explainerReceipt(sim){
   return `<div class="receipt">
     <div class="rt">SHARP AGENT</div><div class="rs">AUTONOMOUS ODDS SURVEILLANCE · SOLANA DEVNET</div>
     <div class="dash"></div>
@@ -283,16 +283,15 @@ function explainerReceipt(){
     <div class="row"><span>1x SELF-GRADE AT FULL TIME</span><span class="r">✓ / ✗</span></div>
     <div class="dash"></div>
     <div class="row big"><span>TOTAL</span><span class="r">UNFAKEABLE TRACK RECORD</span></div>
-    <div class="rs" style="margin-top:6px">${demo.active?"the receipt below is a scripted SIMULATION.<br>in production, every receipt is a real on-chain transaction.":"every receipt below is a real on-chain transaction.<br>misses cannot be deleted. hits cannot be invented."}</div>
+    <div class="rs" style="margin-top:6px">${sim?"the receipt(s) below are SIMULATED examples.<br>in production, every receipt is a real on-chain transaction.":"every receipt below is a real on-chain transaction.<br>misses cannot be deleted. hits cannot be invented."}</div>
     ${barcode("SHARP")}
     <div class="rs">THANK YOU — VERIFY, DON'T TRUST</div>
   </div>`;
 }
-function renderReceipts(isNew){
-  const items=signals.map((s,i)=>{
-    const sim=s._sim;
-    const ex=sim?null:(s.explorer??(s.memoTx?`https://explorer.solana.com/tx/${s.memoTx}?cluster=${network}`:null));
-    return `<div class="receipt ${isNew&&i===0?"print":""}">
+function receiptHtml(s,i,isNew){
+  const sim=s._sim;
+  const ex=sim?null:(s.explorer??(s.memoTx?`https://explorer.solana.com/tx/${s.memoTx}?cluster=${network}`:null));
+  return `<div class="receipt ${isNew&&i===0?"print":""}">
       ${sim?`<div class="simwm">SIMULATED</div>`:""}
       ${s.grade?`<div class="stamp ${s.grade.won?"win":"loss"}">${s.grade.won?"CORRECT":"WRONG"}</div>`:`<div class="stamp pend">AWAITING RESULT</div>`}
       <div class="rt">PREDICTION RECEIPT</div>
@@ -308,8 +307,23 @@ function renderReceipts(isNew){
       ${barcode(s.memoTx||s.id)}
       <div class="rs">SHARP · PROOF OVER PROMISES</div>
     </div>`;
-  }).join("");
-  return `<div class="printer"></div><div class="rwrap">${explainerReceipt()}${items||`<div class="empty" style="color:var(--mut)">No prediction receipts yet — the printer fires the moment the agent catches an abnormal move in a live match.</div>`}</div>`;
+}
+// Illustrative receipts shown when no real signals exist yet, so the Receipts
+// tab teaches the concept at rest. Clearly marked SIMULATED; link to no tx.
+const SAMPLE_RECEIPTS=[
+  {id:"sample-1",_sim:true,at:Date.now()-6.4e6,fixtureId:770101,direction:"IN",outcome:"Northgate FC",pFrom:0.45,pTo:0.58,deltaPts:13,zScore:4.1,inRunning:true,cause:"sharp-move",memoTx:"Sample11111111111111111111111111111111111111",grade:{won:true,finalScore:"1-0"}},
+  {id:"sample-2",_sim:true,at:Date.now()-1.1e7,fixtureId:770102,direction:"IN",outcome:"Riverside United",pFrom:0.34,pTo:0.47,deltaPts:13,zScore:3.6,inRunning:false,cause:"sharp-move",memoTx:"Sample22222222222222222222222222222222222222",grade:{won:false,finalScore:"0-2"}},
+  {id:"sample-3",_sim:true,at:Date.now()-9e5,fixtureId:770103,direction:"OUT",outcome:"Draw",pFrom:0.29,pTo:0.20,deltaPts:-9,zScore:3.2,inRunning:true,cause:"goal-reprice",memoTx:null,grade:null},
+];
+function renderReceipts(isNew){
+  const items=signals.map((s,i)=>receiptHtml(s,i,isNew)).join("");
+  if(items) return `<div class="printer"></div><div class="rwrap">${explainerReceipt(demo.active)}${items}</div>`;
+  if(demo.active) return `<div class="printer"></div><div class="rwrap">${explainerReceipt(true)}</div>`;
+  // empty real tape: show illustrative samples so the concept reads at rest
+  const samples=SAMPLE_RECEIPTS.map((s,i)=>receiptHtml(s,i,false)).join("");
+  return `<div class="printer"></div><div class="rwrap">${explainerReceipt(true)}
+    <div class="democap on" style="text-align:center">No live signals yet — here's what a receipt looks like. These are <b style="color:#C99A3A">SIMULATED</b> examples; real ones link to a Solana transaction and can't be edited after the fact.</div>
+    ${samples}</div>`;
 }
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
