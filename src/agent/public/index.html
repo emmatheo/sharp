@@ -123,7 +123,10 @@ header{position:sticky;top:0;z-index:9;background:rgba(11,13,16,.94);backdrop-fi
 /* ---- demo launcher + simulation chrome ---- */
 .demolaunch{display:flex;align-items:center;gap:11px;background:linear-gradient(90deg,rgba(48,209,88,.12),rgba(48,150,220,.10));border:1px solid #2E4A3A;border-radius:12px;padding:11px 14px;margin:12px 0;cursor:pointer;transition:transform .15s,border-color .2s}
 .demolaunch:hover{transform:translateY(-2px);border-color:var(--grn)}
-.demolaunch .play{width:30px;height:30px;flex:0 0 auto;border-radius:50%;background:var(--grn);color:#0B0D10;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800}
+.demolaunch .play{width:30px;height:30px;flex:0 0 auto;border-radius:50%;background:var(--grn);color:#0B0D10;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;position:relative}
+.demolaunch .play::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:2px solid var(--grn);opacity:0;animation:playpulse 2.2s ease-out infinite}
+@keyframes playpulse{0%{transform:scale(.8);opacity:.6}100%{transform:scale(1.7);opacity:0}}
+@media(prefers-reduced-motion:reduce){.demolaunch .play::after{animation:none}}
 .demolaunch .dl b{font-weight:700;font-size:13px}.demolaunch .dl i{display:block;font-style:normal;color:var(--mut);font-size:11px;margin-top:1px}
 .simbar{position:sticky;top:52px;z-index:8;display:none;align-items:center;gap:10px;background:rgba(255,180,84,.14);border:1px solid #FFB454;color:#FFB454;border-radius:10px;padding:9px 13px;margin:12px 0;font-size:12px;font-weight:600}
 .simbar.on{display:flex}
@@ -187,6 +190,7 @@ async function boot(){
     signals=await (await fetch("/signals")).json();
     render();
   }catch{$("#status").textContent="agent offline — npm start";$("#dot").classList.add("dead");}
+  maybeAutoDemo();
   const es=new EventSource("/events");
   es.onerror=()=>$("#dot").classList.add("dead");
   es.onopen=()=>$("#dot").classList.remove("dead");
@@ -387,6 +391,17 @@ async function endDemo(){
 }
 $("#demoLaunch").onclick=startDemo;
 $("#demoExit").onclick=endDemo;
+// First visit, quiet board → auto-play the walkthrough once so a judge grasps
+// the concept without clicking. Never hijacks a board that already has real
+// live data, and only fires once (remembered in localStorage).
+function maybeAutoDemo(){
+  let seen=false; try{seen=!!localStorage.getItem("sharp_demo_seen");}catch{}
+  if(seen)return;
+  try{localStorage.setItem("sharp_demo_seen","1");}catch{}
+  const hasLive=matches.some(m=>m.phase!=null&&!TERMINAL.has(m.phase)&&m.h!=null);
+  if(signals.length||hasLive)return; // real content present — leave it be
+  setTimeout(()=>{if(!demo.active)startDemo();},2600);
+}
 
 boot();
 </script>
